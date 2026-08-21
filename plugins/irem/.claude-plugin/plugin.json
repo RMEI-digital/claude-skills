@@ -2,5 +2,18 @@
   "name": "irem",
   "version": "1.0.0",
   "description": "Skills institucionales de IREM: presentaciones en formato oficial IREM-BID y repositorios privados en la organización RMEI-digital.",
-  "keywords": ["irem", "bid", "presentaciones", "quarto", "beamer", "github", "repositorios"]
+  "author": {
+    "name": "Mauro Ttito",
+    "email": "maurottito@gmail.com"
+  },
+  "homepage": "https://github.com/RMEI-digital/claude-skills",
+  "keywords": [
+    "irem",
+    "bid",
+    "presentaciones",
+    "quarto",
+    "beamer",
+    "github",
+    "repositorios"
+  ]
 }

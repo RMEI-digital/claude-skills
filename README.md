@@ -81,6 +81,15 @@ Al publicar cualquier cambio:
 3. Commit y push.
 4. Avisa al equipo que corra `/plugin update irem`.
 
+Si `update` insiste en que ya estás al día justo después de un push, el clon local del
+marketplace todavía no trajo el commit. Se fuerza con:
+
+```bash
+git -C ~/.claude/plugins/marketplaces/rmei-digital pull
+```
+
+Y después de actualizar hay que **abrir una sesión nueva**: el propio comando lo avisa.
+
 ## Cómo aportar
 
 Las skills son archivos de texto. Cada una es una carpeta en `plugins/irem/skills/` con un

@@ -126,7 +126,10 @@
 %%
 %%  Su tercio izquierdo es blanco y se funde con la lámina; el panel
 %%  queda entre y = 9.3 y 25.2 mm con su curva intacta, y la fotografía
-%%  arranca en x = 68.1 mm. De ahí el ancho de 58 mm del bloque de texto.
+%%  arranca en x = 68.1 mm. El bloque de texto mide 62 mm y va centrado en
+%%  esa franja, así que deja 3 mm de aire a cada lado. Con 58 mm, el ancho
+%%  anterior, un subtítulo de dos líneas se iba a tres y chocaba con la
+%%  autoría.
 \setbeamertemplate{title page}{%
   \begin{tikzpicture}[remember picture, overlay]
     \node[anchor=north east, inner sep=0pt] at (current page.north east)
@@ -135,16 +138,34 @@
     %% anclan al borde inferior. Así un título o subtítulo de varias líneas
     %% nunca se encima con la autoría, que era el defecto de fijar las
     %% cuatro posiciones por separado.
-    \node[anchor=north west, text width=58mm, align=flush left, inner sep=0pt]
-      at ([shift={(3.2mm,-33.7mm)}]current page.north west)
-      {\bfseries\color{textonegro}\fontsize{19}{24}\selectfont\inserttitle
+    %%
+    %% Los dos bloques se centran en la franja blanca, no en la lámina: la
+    %% fotografía arranca en x = 68.1 mm, así que el espacio disponible va de
+    %% 0 a 68.1 mm y su eje cae en 34.05 mm. Centrar respecto de la lámina
+    %% completa (80 mm) metería el texto debajo de la foto. Antes los bloques
+    %% colgaban del margen izquierdo con sangrías distintas (3.2 y 1.8 mm),
+    %% que se notaba como un desalineado entre título y autoría.
+    %% Sin partición de palabras: centrado, un corte como "cuan-do" se lee
+    %% como un error de composición. Aquí NO sirve \hyphenpenalty=10000,
+    %% que es el truco habitual y el que usa \concepto más abajo: con
+    %% babel en español el corte se produce igual (comprobado con las dos
+    %% variantes en un caso mínimo). Lo que sí funciona es \hyphenchar de
+    %% la fuente activa, así que va después de cada \selectfont, porque
+    %% cada elemento cambia de tamaño y hereda su propio \font.
+    \node[anchor=north, text width=62mm, align=center, inner sep=0pt]
+      at ([shift={(34.05mm,-33.7mm)}]current page.north west)
+      {\bfseries\color{textonegro}\fontsize{19}{24}\selectfont\hyphenchar\font=-1\relax
+       \inserttitle
        \ifx\insertsubtitle\empty\else
-         \\[2.4mm]{\mdseries\color{iremazul}\fontsize{12}{16}\selectfont\insertsubtitle}%
+         \\[2.4mm]{\mdseries\color{iremazul}\fontsize{12}{16}\selectfont\hyphenchar\font=-1\relax
+           \insertsubtitle}%
        \fi};
-    \node[anchor=south west, text width=58mm, align=flush left, inner sep=0pt]
-      at ([shift={(1.8mm,17mm)}]current page.south west)
-      {\bfseries\color{grisoscuro}\fontsize{11}{15}\selectfont\insertauthor
-       \\[0.6mm]{\mdseries\color{grisclaro}\fontsize{10}{14}\selectfont\insertdate}};
+    \node[anchor=south, text width=62mm, align=center, inner sep=0pt]
+      at ([shift={(34.05mm,17mm)}]current page.south west)
+      {\bfseries\color{grisoscuro}\fontsize{11}{15}\selectfont\hyphenchar\font=-1\relax
+       \insertauthor
+       \\[0.6mm]{\mdseries\color{grisclaro}\fontsize{10}{14}\selectfont\hyphenchar\font=-1\relax
+         \insertdate}};
   \end{tikzpicture}%
 }
 

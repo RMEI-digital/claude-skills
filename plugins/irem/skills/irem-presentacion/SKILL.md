@@ -284,9 +284,14 @@ cualquier recorte de la foto arrastra un trozo de panel que luego asoma detrás 
 superpuesto; y recortar el panel por su borde derecho lo corta antes de la curva y lo deja
 con esquina cuadrada. La imagen completa evita ambos.
 
-El bloque de texto de la izquierda está limitado a 58 mm de ancho para no invadir la
-fotografía, que arranca en x = 68,1 mm. El panel del logotipo ocupa de y = 9,3 a 25,2 mm,
-por eso el título empieza en 33,7 mm.
+El bloque de texto mide 62 mm y va centrado en la franja blanca que deja la fotografía,
+que arranca en x = 68,1 mm: su eje cae en 34,05 mm, no en el centro de la lámina. El panel
+del logotipo ocupa de y = 9,3 a 25,2 mm, por eso el título empieza en 33,7 mm.
+
+En la portada las palabras no se parten. El truco de `\hyphenpenalty=10000` no basta con
+babel en español, así que la plantilla anula el `\hyphenchar` de cada fuente después de
+seleccionarla. Si añades un elemento nuevo a la portada, repite ese `\hyphenchar` o volverás
+a ver cortes como "cuan-do".
 
 Toda esta decoración vive en el `footline`, nunca en el `headline`: el pie se compone
 después del título de lámina, cuya caja tiene fondo blanco y recortaría el chevron.

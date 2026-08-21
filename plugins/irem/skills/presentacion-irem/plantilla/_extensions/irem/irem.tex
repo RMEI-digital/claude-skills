@@ -15,6 +15,7 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage{tcolorbox}
 
 %% --- Paleta institucional (BID-IREM 2025) --------------------------------
 \definecolor{iremazul}{HTML}{367CBC}    % azul institucional
@@ -222,6 +223,31 @@
       at ([shift={(0mm,7mm)}]current page.south)
       {\includegraphics[width=120mm]{cintilla-#1-esp.png}};
   \end{tikzpicture}%
+}
+
+%% --- Caja de concepto -----------------------------------------------------
+%%  \concepto{término}{en una frase}
+%%
+%%  Para láminas de vocabulario: en vez de una lista de viñetas, una rejilla
+%%  de cajas. Cada concepto queda delimitado visualmente, que es justo lo que
+%%  una lista no hace.
+%%
+%%  Se colocan dos por fila separadas con \hfill: 2 x 60 mm caben en el área
+%%  de texto de 126 mm. Para tres conceptos, dos filas (2 + 1), no tres
+%%  cajas angostas, para que el ancho no cambie entre láminas.
+\newcommand{\concepto}[2]{%
+  \begin{tcolorbox}[nobeforeafter, box align=top,
+    width=60mm, height=20mm, valign=top,
+    colback=grissuave, colframe=iremverde,
+    boxrule=0pt, leftrule=1.4mm, arc=0.8mm,
+    left=3mm, right=2.5mm, top=2mm, bottom=1mm]
+    %% Sin partir palabras: en una caja angosta un «rom-per» se lee peor que
+    %% una línea corta. Con \raggedright no se abren ríos de espacio.
+    \raggedright\hyphenpenalty=10000\exhyphenpenalty=10000\relax
+    {\fontsize{12}{14}\selectfont\bfseries\color{iremazul}#1\par}
+    \vspace{1.2mm}
+    {\fontsize{9}{11.5}\selectfont\color{grisoscuro}#2\par}
+  \end{tcolorbox}%
 }
 
 %% --- Enlaces --------------------------------------------------------------

@@ -174,6 +174,7 @@ sale truncado, con menos láminas de las que escribiste y sin mensaje evidente d
 | `\cifra{41\%}{qué significa}` | Un dato que debe golpear |
 | `\pregunta{...}` | Momento participativo, con etiqueta visible para la audiencia |
 | `\laminaGracias` | Cierre. Acepta otro texto: `\laminaGracias[Preguntas]` |
+| `\concepto{término}{frase}` | Caja de concepto, para láminas de vocabulario |
 | `\logosPie` | Añade los dos logotipos a una lámina `.plain` |
 
 Las láminas `.plain` no llevan pie, así que tampoco logotipos. **La última lámina de la
@@ -192,6 +193,32 @@ Lo que yo digo, no lo que se proyecta.
 ```
 
 Escribe notas en **toda** lámina que no sea obvia: son el guion de quien presenta.
+
+### Láminas de vocabulario
+
+Para explicar varios términos, **rejilla de cajas en vez de lista de viñetas**: cada
+concepto queda delimitado visualmente, que es justo lo que una lista no hace.
+
+````markdown
+## Los 4 del día a día
+
+```{=latex}
+\vspace{1mm}
+\concepto{Repositorio}{La carpeta del proyecto, pero con memoria}\hfill
+\concepto{Commit}{La foto, con una nota de qué cambió y por qué}
+
+\vspace{4mm}
+\concepto{Push}{Subir tus fotos al álbum compartido}\hfill
+\concepto{Pull}{Bajar las fotos que subieron las demás}
+```
+````
+
+Dos cajas por fila separadas con `\hfill`: 2 × 60 mm caben en el área de texto de 126 mm.
+Para tres conceptos usa dos filas (2 + 1), **no** tres cajas angostas, para que el ancho no
+cambie entre láminas. Máximo cuatro por lámina.
+
+Las cajas no parten palabras a propósito, así que una descripción larga produce una línea
+corta en lugar de un guion. Si la frase no cabe en dos líneas, acórtala.
 
 ## Identidad visual
 

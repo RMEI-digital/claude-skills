@@ -68,6 +68,19 @@ Las dos reglas que automatiza:
 interactivo y lo tienes que correr tú). Si Claude te ofrece instalarlo, acepta; el login
 sigue siendo tuyo.
 
+## Publicar un cambio
+
+`/plugin update` compara **versiones**, no contenido. Si corriges algo y no subes la versión
+en `plugins/irem/.claude-plugin/plugin.json`, el comando responde «ya estás al día» y todo el
+equipo se queda con la copia vieja **sin ningún aviso**.
+
+Al publicar cualquier cambio:
+
+1. Sube `version` en `plugin.json` — parche para correcciones, menor para algo nuevo.
+2. `claude plugin validate .` debe pasar sin advertencias.
+3. Commit y push.
+4. Avisa al equipo que corra `/plugin update irem`.
+
 ## Cómo aportar
 
 Las skills son archivos de texto. Cada una es una carpeta en `plugins/irem/skills/` con un

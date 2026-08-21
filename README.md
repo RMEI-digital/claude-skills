@@ -68,6 +68,20 @@ Las dos reglas que automatiza:
 interactivo y lo tienes que correr tú). Si Claude te ofrece instalarlo, acepta; el login
 sigue siendo tuyo.
 
+### `/irem-security-audit`
+
+Auditoría de seguridad de un repositorio, código e historial de git. Corre TruffleHog para
+buscar secretos vivos en **todo** el historial, Bandit y Semgrep para análisis estático, y
+—esto es lo que la distingue— una revisión manual de **controles ausentes**: autenticación,
+validación de firma, límites de tasa.
+
+Esa distinción es la razón de ser de la skill: el análisis automático encuentra lo que está
+mal escrito, no lo que falta. Un endpoint sin autenticación no es código defectuoso, es
+código que no existe, y ninguna herramienta lo señala sola.
+
+Pensada para repos pequeños de salud pública y datos personales, tipo Flask, Django o Node
+sobre Heroku o Vercel. Entrega `SECURITY-REVIEW.md` y un resumen ejecutivo aparte.
+
 ## Publicar un cambio
 
 `/plugin update` compara **versiones**, no contenido. Si corriges algo y no subes la versión

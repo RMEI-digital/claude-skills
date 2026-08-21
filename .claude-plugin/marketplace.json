@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "irem",
-      "description": "Skills institucionales de IREM: genera presentaciones en el formato oficial IREM-BID y crea repositorios privados dentro de la organización.",
+      "description": "Skills institucionales de IREM: presentaciones en formato oficial IREM-BID, repositorios privados en la organización RMEI-digital, y auditoría de seguridad de repositorios.",
       "author": {
         "name": "Mauro Ttito",
         "email": "maurottito@gmail.com"

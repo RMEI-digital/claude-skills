@@ -1,5 +1,5 @@
 ---
-name: repo-irem
+name: irem-repo
 description: Crea un repositorio nuevo, privado, dentro de la organización RMEI-digital en GitHub, lo clona y deja el primer commit hecho. Úsala cuando alguien vaya a empezar un proyecto, una aplicación, un análisis o cualquier trabajo que necesite repositorio, o pida "crear un repo", "un repositorio nuevo" o "subir esto a GitHub". No la uses para repositorios personales fuera de la organización.
 ---
 

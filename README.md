@@ -40,7 +40,10 @@ cada vez que el repositorio cambie.
 
 ## Qué trae
 
-### `/presentacion-irem`
+Las tres empiezan con `irem-`, así que escribiendo `/irem` en Claude Code aparecen todas.
+El prefijo no es decorativo: es lo que las hace encontrables sin recordar el nombre exacto.
+
+### `/irem-presentacion`
 
 Genera presentaciones en Quarto con el formato institucional **Mesoamérica Malaria (IREM) /
 BID** y las compila a PDF: portada oficial, chevron verde, logotipos del BID y de IREM, y la
@@ -52,7 +55,7 @@ intercaladas, que es el guion de quien expone.
 Pídele una presentación y te va a preguntar tres cosas antes de escribir nada: audiencia,
 duración y el mensaje único. Vale la pena contestarlas bien.
 
-### `/repo-irem`
+### `/irem-repo`
 
 Crea un repositorio nuevo **dentro de la organización** y **privado**, lo clona y deja el
 primer commit hecho. Antes de crear nada te muestra un resumen y espera tu aprobación.

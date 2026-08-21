@@ -1,5 +1,5 @@
 ---
-name: presentacion-irem
+name: irem-presentacion
 description: Genera presentaciones en Quarto con el formato institucional Mesoamérica Malaria (IREM) / BID y las compila a PDF. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck" o "unas láminas" para el equipo, para una reunión, para el BID o para un donante; también cuando pida convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
 ---
 

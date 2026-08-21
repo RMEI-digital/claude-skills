@@ -1,0 +1,232 @@
+%% ==========================================================================
+%%  Tema Beamer institucional — Mesoamérica Malaria (IREM) · BID
+%%
+%%  Paleta: BID-IREM-TemplatePPT2025.pptx (colores medidos de las figuras,
+%%  no del tema de Office, que en el archivo original es el de omisión).
+%%  Geometría de portada y contenido: IREM PPT Template.pptx.
+%%  Conversión del lienzo de PowerPoint (13.333 x 7.5 in) al de Beamer
+%%  (160 x 90 mm): 12.0 mm por pulgada.
+%%
+%%  Densidad tipográfica intermedia: mayor que las plantillas oficiales
+%%  (cuerpo de 16-18 pt) y menor que una lámina de una sola frase.
+%% ==========================================================================
+
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+%% --- Paleta institucional (BID-IREM 2025) --------------------------------
+\definecolor{iremazul}{HTML}{367CBC}    % azul institucional
+\definecolor{iremverde}{HTML}{98CE63}   % verde institucional
+\definecolor{grisclaro}{HTML}{9B9B9D}   % gris de apoyo
+\definecolor{grisoscuro}{HTML}{404040}  % texto principal
+\definecolor{textonegro}{HTML}{000000}  % énfasis
+\definecolor{grissuave}{HTML}{EFEEEE}   % fondos de bloque
+
+%% --- Rutas de los logotipos ----------------------------------------------
+\graphicspath{{_extensions/irem/logos/}{logos/}{./}}
+
+%% --- Tipografía -----------------------------------------------------------
+%% Uni Sans es la corporativa del BID. Si está instalada se usa; si no,
+%% Arial, que es la que aplican de hecho las plantillas de IREM.
+\IfFontExistsTF{Uni Sans}{%
+  \setsansfont{Uni Sans}%
+}{%
+  \IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{Helvetica Neue}}%
+}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}[Scale=0.8]}{\setmonofont{Courier New}[Scale=0.88]}
+\renewcommand{\familydefault}{\sfdefault}
+\usefonttheme{professionalfonts}
+
+%% --- Colores de Beamer ----------------------------------------------------
+\setbeamercolor{normal text}{fg=grisoscuro, bg=white}
+\setbeamercolor{structure}{fg=iremverde}
+\setbeamercolor{frametitle}{fg=iremazul, bg=white}
+\setbeamercolor{title}{fg=textonegro}
+\setbeamercolor{subtitle}{fg=iremazul}
+\setbeamercolor{itemize item}{fg=iremverde}
+\setbeamercolor{itemize subitem}{fg=iremazul}
+\setbeamercolor{enumerate item}{fg=iremazul}
+\setbeamercolor{alerted text}{fg=iremazul}
+\setbeamercolor{block title}{fg=white, bg=iremazul}
+\setbeamercolor{block body}{fg=grisoscuro, bg=grissuave}
+
+%% --- Fuentes: densidad intermedia ----------------------------------------
+\setbeamerfont{frametitle}{size=\fontsize{16}{20}\selectfont, series=\bfseries}
+\setbeamerfont{normal text}{size=\fontsize{10.5}{15}\selectfont}
+\setbeamerfont{itemize/enumerate body}{size=\fontsize{10.5}{16}\selectfont}
+\setbeamerfont{itemize/enumerate subbody}{size=\fontsize{9}{14}\selectfont}
+\setbeamerfont{footline}{size=\fontsize{7}{9}\selectfont}
+
+%% --- Márgenes: cuerpo alineado con el título, a 18 mm --------------------
+\setbeamersize{text margin left=18mm, text margin right=16mm}
+\setlength{\parskip}{0.5em}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\small\raisebox{0.12ex}{\textbullet}}
+\setbeamertemplate{itemize subitem}{\scriptsize\raisebox{0.15ex}{\textendash}}
+
+%% --- Decoración fija de las láminas de contenido -------------------------
+%%  Chevron   original: pos (0.87,  0.39)" tam 0.61 x 0.56"
+%%  Logo IREM original: pos (10.66, 6.63)" tam 2.53 x 0.80"
+%%  Logo BID  original: pos (0.18,  6.61)" tam 1.11 x 0.79"
+%%
+%%  Todo va en el pie, no en la cabecera: el pie se compone DESPUÉS del
+%%  título de lámina, cuya caja tiene fondo blanco y taparía el chevron.
+%% Los dos logotipos del pie. Nodos internos para el pie automático, y
+%% \logosPie como comando público para las láminas `plain`, que no llevan
+%% pie: se pone donde se quieran los logotipos, típicamente el cierre.
+\newcommand{\iremLogosNodos}{%
+  \node[anchor=north west, inner sep=0pt]
+    at ([shift={(2.2mm,-79.3mm)}]current page.north west)
+    {\includegraphics[width=13.3mm]{logo-pie-izquierda.png}};
+  \node[anchor=north west, inner sep=0pt]
+    at ([shift={(127.9mm,-79.6mm)}]current page.north west)
+    {\includegraphics[width=30.4mm]{logo-pie-derecha.png}};%
+}
+\newcommand{\logosPie}{%
+  \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\end{tikzpicture}%
+}
+
+\setbeamertemplate{headline}{}
+\setbeamertemplate{footline}{%
+  \ifnum\insertframenumber>1\relax
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[anchor=north west, inner sep=0pt]
+        at ([shift={(10.4mm,-4.7mm)}]current page.north west)
+        {\includegraphics[width=7.3mm]{chevron.png}};
+      \iremLogosNodos
+    \end{tikzpicture}%
+  \fi
+}
+%% Sin numeración de láminas, por decisión de formato.
+\setbeamertemplate{page number in head/foot}{}
+
+%% --- Portada: réplica de la lámina 1 de IREM PPT Template ----------------
+%%  panel logo  pos (2.89, 1.02)" tam 4.73 x 1.27"   (encima de la foto)
+%%  título      pos (0.27, 2.81)" ancho 6.13"
+%%  fecha       pos (0.15, 5.18)"
+%%
+%%  IMAGEN DE PORTADA — una sola pieza, sin recomponer.
+%%
+%%  Antes se recortaban foto y panel por separado y se superponían. Eso
+%%  producía dos defectos: el recorte de la foto arrastraba el trozo de
+%%  panel que lo solapa (la foto empieza en el 30.12% de la imagen, pero
+%%  el panel se extiende sobre ella hasta el 44.72%), y el recorte del
+%%  panel se cortaba antes de su curva, dejándolo con esquina cuadrada.
+%%
+%%  Ahora se usa la imagen oficial íntegra, a la altura de la lámina y
+%%  pegada al borde derecho. IMPORTANTE: el asset ya viene recortado de
+%%  sus márgenes blancos (la imagen original traía 2.07% arriba y 1.64%
+%%  abajo, lo que dejaba dos franjas blancas y la foto no llegaba a los
+%%  bordes). Recortada mide 1630x1115, aspecto 1.4619: a 90 mm de alto
+%%  ocupa 131.57 mm, desde x = 28.43 mm, y la foto toca arriba y abajo.
+%%
+%%  Su tercio izquierdo es blanco y se funde con la lámina; el panel
+%%  queda entre y = 9.3 y 25.2 mm con su curva intacta, y la fotografía
+%%  arranca en x = 68.1 mm. De ahí el ancho de 58 mm del bloque de texto.
+\setbeamertemplate{title page}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=north east, inner sep=0pt] at (current page.north east)
+      {\includegraphics[height=\paperheight]{portada-completa.png}};
+    %% Título y subtítulo fluyen juntos desde arriba; autoría y fecha se
+    %% anclan al borde inferior. Así un título o subtítulo de varias líneas
+    %% nunca se encima con la autoría, que era el defecto de fijar las
+    %% cuatro posiciones por separado.
+    \node[anchor=north west, text width=58mm, align=flush left, inner sep=0pt]
+      at ([shift={(3.2mm,-33.7mm)}]current page.north west)
+      {\bfseries\color{textonegro}\fontsize{19}{24}\selectfont\inserttitle
+       \ifx\insertsubtitle\empty\else
+         \\[2.4mm]{\mdseries\color{iremazul}\fontsize{12}{16}\selectfont\insertsubtitle}%
+       \fi};
+    \node[anchor=south west, text width=58mm, align=flush left, inner sep=0pt]
+      at ([shift={(1.8mm,17mm)}]current page.south west)
+      {\bfseries\color{grisoscuro}\fontsize{11}{15}\selectfont\insertauthor
+       \\[0.6mm]{\mdseries\color{grisclaro}\fontsize{10}{14}\selectfont\insertdate}};
+  \end{tikzpicture}%
+}
+
+%% --- Título de lámina -----------------------------------------------------
+%%  Original: pos (1.48, 0.39)" → 17.8 mm desde el borde izquierdo
+\setbeamertemplate{frametitle}{%
+  \vspace*{3.5mm}%
+  \begin{beamercolorbox}[wd=\paperwidth, leftskip=17.8mm, rightskip=16mm]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\par%
+  \end{beamercolorbox}%
+  \vspace{3.5mm}%
+}
+
+%% --- Lámina divisoria de sección -----------------------------------------
+\newcommand{\laminaSeccion}[1]{%
+  \begingroup
+  \setbeamercolor{background canvas}{bg=iremazul}
+  \setbeamertemplate{headline}{}
+  \setbeamertemplate{footline}{}
+  \begin{frame}[plain, noframenumbering]
+    \vspace*{\fill}
+    {\fontsize{21}{26}\selectfont\bfseries\color{white} #1\par}
+    \vskip0.55em
+    {\color{iremverde}\rule{2.2cm}{2.4pt}}
+  \end{frame}
+  \endgroup
+}
+\AtBeginSection[]{\laminaSeccion{\insertsectionhead}}
+
+%% --- Lámina de una sola idea ---------------------------------------------
+\newcommand{\ideaGrande}[1]{%
+  \vspace*{\fill}
+  \begin{center}
+    {\fontsize{20}{26}\selectfont\bfseries\color{iremazul} #1\par}
+  \end{center}
+}
+
+%% --- Cifra destacada ------------------------------------------------------
+\newcommand{\cifra}[2]{%
+  \vspace*{\fill}
+  \begin{center}
+    {\fontsize{44}{48}\selectfont\bfseries\color{iremverde} #1\par}
+    \vskip0.35em
+    {\fontsize{12}{16}\selectfont\color{grisclaro} #2\par}
+  \end{center}
+}
+
+%% --- Momento participativo ------------------------------------------------
+\newcommand{\pregunta}[1]{%
+  \vspace*{\fill}
+  \begin{center}
+    {\fontsize{9}{11}\selectfont\bfseries\color{iremverde} PREGUNTA AL EQUIPO\par}
+    \vskip0.7em
+    {\fontsize{18}{23}\selectfont\bfseries\color{textonegro} #1\par}
+  \end{center}
+}
+
+%% --- Cierre ---------------------------------------------------------------
+%%  Va dentro de una lámina `## {.plain}`, igual que \ideaGrande.
+%%  No crea su propio frame: Quarto ya tiene la lámina abierta.
+\newcommand{\laminaGracias}[1][Gracias]{%
+  \vspace*{\fill}
+  \hspace*{6mm}{\fontsize{34}{40}\selectfont\bfseries\color{iremazul} #1\par}
+  \vskip0.5em
+  \hspace*{6mm}{\color{iremverde}\rule{2.4cm}{2.4pt}}
+  %% La lámina de cierre es `plain` y no lleva pie, así que los logotipos
+  %% se dibujan aquí a mano, en la misma posición que en el resto.
+  \logosPie
+}
+
+%% --- Cintillas de logos (opcionales, no van en el cuerpo) ----------------
+%%  \cintilla{comite} o \cintilla{socios} — para portada o cierre si se piden.
+\newcommand{\cintilla}[1]{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=south, inner sep=0pt]
+      at ([shift={(0mm,7mm)}]current page.south)
+      {\includegraphics[width=120mm]{cintilla-#1-esp.png}};
+  \end{tikzpicture}%
+}
+
+%% --- Enlaces --------------------------------------------------------------
+\hypersetup{colorlinks=true, linkcolor=iremazul, urlcolor=iremazul, citecolor=iremazul}
+
+%% --- Código ---------------------------------------------------------------
+\definecolor{shadecolor}{HTML}{EFEEEE}
+\setbeamerfont{verbatim}{size=\fontsize{9}{11}\selectfont}

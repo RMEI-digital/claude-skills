@@ -1,0 +1,6 @@
+{
+  "name": "irem",
+  "version": "1.0.0",
+  "description": "Skills institucionales de IREM: presentaciones en formato oficial IREM-BID y repositorios privados en la organización RMEI-digital.",
+  "keywords": ["irem", "bid", "presentaciones", "quarto", "beamer", "github", "repositorios"]
+}

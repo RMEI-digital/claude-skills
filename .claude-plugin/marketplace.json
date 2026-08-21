@@ -1,0 +1,20 @@
+{
+  "name": "rmei-digital",
+  "description": "Skills de Claude Code del equipo de RMEI-digital",
+  "owner": {
+    "name": "RMEI-digital",
+    "email": "maurot@saludmesoamerica.org"
+  },
+  "plugins": [
+    {
+      "name": "irem",
+      "description": "Skills institucionales de IREM: genera presentaciones en el formato oficial IREM-BID y crea repositorios privados dentro de la organización.",
+      "author": {
+        "name": "Mauro Ttito",
+        "email": "maurottito@gmail.com"
+      },
+      "source": "./plugins/irem",
+      "category": "productivity"
+    }
+  ]
+}

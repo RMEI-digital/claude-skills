@@ -1,0 +1,22 @@
+title: IREM Beamer
+author: Salud Mesoamérica · IREM
+version: 1.0.0
+quarto-required: ">=1.4.0"
+contributes:
+  formats:
+    beamer:
+      pdf-engine: xelatex
+      aspectratio: 169
+      slide-level: 2
+      theme: default
+      classoption:
+        - t
+      include-in-header:
+        - irem.tex
+      knitr:
+        opts_chunk:
+          dev: cairo_pdf
+          fig.align: center
+          echo: false
+          warning: false
+          message: false

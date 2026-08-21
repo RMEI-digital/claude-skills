@@ -1,0 +1,85 @@
+---
+title: "Título de la presentación"
+subtitle: "Subtítulo breve, una línea"
+author: "Nombre de quien presenta"
+date: today
+date-format: long
+lang: es
+format: irem-beamer
+---
+
+# Primera sección
+
+## Una idea por lámina
+
+- Frases cortas, no párrafos
+- Tres o cuatro viñetas como máximo
+- Si necesitas más, es otra lámina
+
+::: {.notes}
+Nota del presentador: aquí explico por qué menos texto obliga a la audiencia a
+escucharme en vez de leer la pantalla.
+:::
+
+## {.plain}
+
+```{=latex}
+\ideaGrande{La afirmación que quiero que recuerden}
+\note{Esta lámina se queda en silencio tres segundos antes de que yo hable.}
+```
+
+## Lámina con dos columnas
+
+:::: {.columns}
+::: {.column width="50%"}
+**Antes**
+
+Lo que hacíamos hasta ahora
+:::
+::: {.column width="50%"}
+**Después**
+
+Lo que proponemos
+:::
+::::
+
+## {.plain}
+
+```{=latex}
+\cifra{41\%}{de la ventana semanal consumida}
+```
+
+## Lámina con código
+
+```bash
+quarto render presentacion.qmd
+```
+
+El bloque va en Menlo sobre fondo suave, sin bordes duros.
+
+## {.plain}
+
+```{=latex}
+\pregunta{¿A quién le ha pasado esto alguna vez?}
+\note{Espero manos arriba. Si nadie responde, cuento mi propio caso primero.}
+```
+
+# Segunda sección
+
+## Cierre
+
+Tres ideas para llevarse:
+
+1. La primera
+2. La segunda
+3. La tercera
+
+::: {.notes}
+Cierro repitiendo estas tres y abro las preguntas.
+:::
+
+## {.plain}
+
+```{=latex}
+\laminaGracias
+```

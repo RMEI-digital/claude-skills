@@ -217,6 +217,24 @@ Dos cajas por fila separadas con `\hfill`: 2 × 60 mm caben en el área de texto
 Para tres conceptos usa dos filas (2 + 1), **no** tres cajas angostas, para que el ancho no
 cambie entre láminas. Máximo cuatro por lámina.
 
+#### Cuándo cajas y cuándo viñetas
+
+Cuando una lámina tiene tres o cuatro puntos, pregúntate si son **paralelos** o una
+**secuencia**:
+
+| Los puntos son… | Usa | Por qué |
+|---|---|---|
+| Paralelos entre sí — conceptos, lineamientos, ideas de cierre | **Cajas** | Cada uno queda delimitado y se lee de un vistazo, en cualquier orden |
+| Una secuencia — primero esto, después aquello | **Viñetas** o lista numerada | Las cajas sugieren independencia y borran el orden, que es justo lo que importa |
+| Uno depende del anterior | **Viñetas** | Igual: la caja rompe el hilo |
+
+Ejemplos de la práctica: las láminas de vocabulario y las de recapitulación van en cajas;
+la del flujo de trabajo —antes, mientras, al terminar— va en viñetas, porque el orden **es**
+el contenido.
+
+No metas en cajas un punto que necesita más de dos líneas de explicación. Si no cabe en dos,
+o lo acortas o la lámina no era de cajas.
+
 Las cajas no parten palabras a propósito, así que una descripción larga produce una línea
 corta en lugar de un guion. Si la frase no cabe en dos líneas, acórtala.
 

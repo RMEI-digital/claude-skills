@@ -54,5 +54,8 @@ Rscript -e '
 ' "${base}.pdf" "${base}-notas.pdf" 2>/dev/null
 
 echo
-echo "Revisa las láminas antes de entregar:"
-echo "  Rscript -e 'pdftools::pdf_convert(\"${base}.pdf\", pages=1:3, dpi=110, format=\"png\")'"
+echo "Revisa las láminas antes de entregar, TODAS, no las tres primeras:"
+echo "  Rscript -e 'n <- pdftools::pdf_info(\"${base}.pdf\")\$pages"
+echo "              pdftools::pdf_convert(\"${base}.pdf\", pages = 1:n, dpi = 110,"
+echo "                                    format = \"png\","
+echo "                                    filenames = sprintf(\"rev-%02d.png\", 1:n))'"

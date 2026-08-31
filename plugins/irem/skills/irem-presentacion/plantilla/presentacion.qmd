@@ -1,6 +1,6 @@
 ---
 title: "Título de la presentación"
-subtitle: "Subtítulo breve, una línea"
+subtitle: "TALLER DE CAPACITACIÓN, AGOSTO 2026"
 author: "Nombre de quien presenta"
 date: today
 date-format: long
@@ -13,7 +13,7 @@ format: irem-beamer
 ## Una idea por lámina
 
 - Frases cortas, no párrafos
-- Tres o cuatro viñetas como máximo
+- Tres o cuatro puntos como máximo
 - Si necesitas más, es otra lámina
 
 ::: {.notes}
@@ -21,11 +21,38 @@ Nota del presentador: aquí explico por qué menos texto obliga a la audiencia a
 escucharme en vez de leer la pantalla.
 :::
 
+## Objetivos
+
+```{=latex}
+\begin{numerados}
+\numerado{01}{El primero, en dos renglones como máximo}
+\numerado{02}{El segundo, del mismo largo que el anterior}
+\numerado{03}{El tercero, y hasta aquí llega la lámina}
+\end{numerados}
+
+\realce{El matiz que no cabe en los numerales}
+```
+
 ## {.plain}
 
 ```{=latex}
 \ideaGrande{La afirmación que quiero que recuerden}
 \note{Esta lámina se queda en silencio tres segundos antes de que yo hable.}
+```
+
+## Resultados de la medición
+
+```{=latex}
+\begin{center}
+\begin{tablaIrem}{m{58mm}rr}
+\ch{COMPONENTE} & \ch{LÍNEA BASE (2019)} & \ch{PRIMERA FASE (2024)} \\
+Primer componente  & 75,0\% & \celdaCalor{medio}{62,5\%} \\
+Segundo componente & 37,5\% & \celdaCalor{alto}{50,0\%} \\
+Tercer componente  & 37,5\% & \celdaCalor{bajo}{37,5\%} \\
+\end{tablaIrem}
+\end{center}
+
+\notaPie{N: establecimientos en la muestra. El denominador varía según el criterio.}
 ```
 
 ## Lámina con dos columnas
@@ -46,22 +73,28 @@ Lo que proponemos
 ## {.plain}
 
 ```{=latex}
-\cifra{41\%}{de la ventana semanal consumida}
+\cifra{41\%}{de los focos residuales quedaron sin intervención}
+\logosPie
 ```
 
-## Lámina con código
+## Los términos del día a día
 
-```bash
-quarto render presentacion.qmd
+```{=latex}
+\vspace{1mm}
+\concepto{Primer término}{Su explicación en una frase}\hfill
+\concepto{Segundo término}{Su explicación en una frase}
+
+\vspace{4mm}
+\concepto{Tercer término}{Su explicación en una frase}\hfill
+\concepto{Cuarto término}{Su explicación en una frase}
 ```
-
-El bloque va en Menlo sobre fondo suave, sin bordes duros.
 
 ## {.plain}
 
 ```{=latex}
 \pregunta{¿A quién le ha pasado esto alguna vez?}
 \note{Espero manos arriba. Si nadie responde, cuento mi propio caso primero.}
+\logosPie
 ```
 
 # Segunda sección

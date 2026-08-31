@@ -46,8 +46,9 @@ El prefijo no es decorativo: es lo que las hace encontrables sin recordar el nom
 ### `/irem-presentacion`
 
 Genera presentaciones en Quarto con el formato institucional **Mesoamérica Malaria (IREM) /
-BID** y las compila a PDF: portada oficial, chevron verde, logotipos del BID y de IREM, y la
-paleta y tipografía medidas de las plantillas oficiales.
+BID** y las compila a PDF: portada oficial con fotografía a sangre, Montserrat, logotipos de
+mesoamérica MALARIA y del BID en el pie, numerales 01/02/03 y tablas de cabecera azul, todo
+replicado del master vigente `ppt_resultados_IREM_2025_master_logos.pptx`.
 
 Produce dos PDF por presentación: uno para proyectar y otro con las **notas del presentador**
 intercaladas, que es el guion de quien expone.

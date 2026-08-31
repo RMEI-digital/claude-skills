@@ -103,7 +103,36 @@ secciones, en este orden, y cada título es literal: se usa tal cual, sin sinón
 | 6 | **Lo que proponemos** | La solución, y cuánto cuesta |
 | 7 | **Siguientes pasos** | Qué se decide hoy, quién lo hace y para cuándo |
 
-Cada una es un `#` de Quarto, así que cada una genera su portadilla.
+### Dos maneras de poner la espina en la lámina, y cuál usar
+
+Esto es lo que más se equivoca, así que va antes que nada.
+
+**Por omisión, la espina va en los TÍTULOS y no lleva portadillas.** El título de cada
+lámina es el nombre de la sección, tal cual, y se repite en todas las láminas de esa
+sección. Cuando hace falta precisar, se califica con dos puntos o con una preposición:
+
+```
+## Lo que vemos
+## Lo que vemos
+## Lo que vemos: flujo de información de muestras
+## Lo que proponemos para puntos urbanos
+## Lo que proponemos: implementación
+```
+
+Repetir el título **no es un error, es el mecanismo**. Lo que distingue una lámina de la
+siguiente es el primer renglón del cuerpo, que hace de subtítulo: «A nivel Departamental»,
+«A nivel Municipal», «En puntos rurales», «En gestores comunitarios». El título dice en qué
+parte del argumento estamos; el primer renglón dice de qué trata esta lámina.
+
+La ventaja no es solo de estilo. Una propuesta real del equipo tiene 19 láminas y **solo
+dos** llevan una frase o menos (la portada y el cierre): un 11%. Con portadillas para las
+siete secciones, ese mismo deck se iría a la mitad en blanco.
+
+**Con `#` y portadillas, solo si la propuesta pasa de veinte láminas de contenido** y cada
+sección llega a dos o más. Es lo que hace el master de resultados, que tiene secciones
+grandes. Por debajo de ese tamaño, siete secciones son siete láminas casi vacías.
+
+En Quarto: sin portadillas, todo va en `##` y no se usa `#` en absoluto.
 
 **La solicitud va primero, antes del contexto.** Es contraintuitivo y es lo que más se
 equivoca: uno quiere explicar el problema antes de llegar al encargo. Para quien escucha
@@ -138,11 +167,8 @@ Para una propuesta de 30 minutos, unas 26 láminas:
 | Lo que proponemos | 5–7 |
 | Siguientes pasos | 1–2 |
 
-**Siete secciones cuestan siete portadillas.** Esa es la letra pequeña de esta espina: solo
-se paga sola en una propuesta de veinte láminas de contenido para arriba. Por debajo de eso,
-las secciones flacas no llevan `#`: su nombre va en el título de la lámina y te ahorras la
-divisoria. Una propuesta de trece láminas con siete portadillas es la mitad del deck en
-blanco.
+Este reparto es de láminas de contenido. Si decides usar portadillas, súmalas aparte y
+relee arriba cuándo se ganan su lugar.
 
 «Lo que vemos» y «lo que proponemos» se llevan la mitad del deck entre las dos. Si «lo que
 sabemos» crece más que «lo que vemos», estás presentando un informe de escritorio, no una
@@ -152,13 +178,17 @@ propuesta.
 
 Esto sale de revisar propuestas reales del equipo. Todos son de contenido, no de formato:
 
-- **Repetir el mismo título en tres láminas seguidas.** Si tres láminas se llaman «Lo que
-  proponemos para puntos rurales», quien escucha no sabe qué cambió entre una y otra.
-  El título dice qué aporta **esa** lámina: la herramienta, luego el costo, luego las
-  implicaciones.
-- **Rotular una lámina con el título de otra.** Un «flujo actual» y un «flujo propuesto» con
-  el mismo título se leen como la misma lámina repetida, y se pierde justamente la
-  comparación que era el argumento.
+- **Dejar dos láminas indistinguibles.** Repetir el título está bien, es el mecanismo; lo
+  que no puede repetirse es el par completo **título más primer renglón**. En una propuesta
+  real había tres láminas seguidas con el mismo título y el mismo subtítulo: una traía la
+  herramienta, otra el costo y otra las implicaciones, pero quien escuchaba veía tres veces
+  el mismo encabezado. La corrección es la que ese mismo deck ya usaba en otra lámina:
+  «Lo que proponemos: implementación», «Lo que proponemos: costo», «Lo que proponemos:
+  implicaciones».
+- **Dos láminas de flujo con el mismo título.** El flujo actual y el propuesto rotulados
+  igual se leen como una lámina repetida, y se pierde justo la comparación que era el
+  argumento. Califica cada una: «Lo que vemos: el flujo de hoy», «Lo que proponemos: el
+  flujo nuevo».
 - **Mandar la tabla de costos con columnas vacías.** Una tabla con «Ventajas» y «Desventajas»
   en blanco frente a un donante dice que la comparación no se hizo. O la llenas o quitas la
   columna.
@@ -647,7 +677,8 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Todas las láminas menos la portada llevan la franja azul y verde al pie.
 - Ninguna sección lleva portadilla con menos de dos láminas de contenido.
 - Las láminas de una frase (portadillas, despliegue y cierre) no pasan de un tercio.
-- Ningún título de lámina se repite igual en dos láminas distintas.
+- No hay dos láminas indistinguibles: el par título más primer renglón no se repite.
+  Repetir solo el título es correcto y esperado.
 - No queda ningún marcador `[...]` sin resolver, ni en las láminas ni en las notas.
 - Ninguna tabla se entrega con celdas vacías que debieran tener contenido.
 

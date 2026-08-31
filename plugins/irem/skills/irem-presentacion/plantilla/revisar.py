@@ -78,6 +78,7 @@ def revisar_contenido(qmd):
 
     secciones = [t for n, t, _ in laminas(cuerpo) if n == 1]
     titulos, con_nota, total = [], 0, 0
+    firmas = {}
     display, seguidas, max_seguidas, por_seccion, actual = 0, 0, 0, {}, None
 
     for nivel, titulo, cont in laminas(cuerpo):
@@ -108,9 +109,21 @@ def revisar_contenido(qmd):
                 fallos.append(f"«{titulo[:40]}»: viñeta de más de dos renglones")
         if titulo and not titulo.startswith("{"):
             titulos.append(titulo)
+            # La firma de una lámina es el título MÁS su primer renglón de
+            # cuerpo. Repetir solo el título es la convención de la casa: el
+            # título nombra la sección y se repite en todas las láminas de
+            # esa sección; lo que distingue una de otra es el primer renglón.
+            # Lo que no puede repetirse es el par completo.
+            primeros = [l.strip() for l in vis.split("\n") if l.strip()]
+            primero = re.sub(r"^[-*]\s+", "", primeros[0])[:60] if primeros else ""
+            firmas.setdefault((titulo, primero), []).append(titulo)
 
-    for t in sorted({t for t in titulos if titulos.count(t) > 1}):
-        fallos.append(f"título repetido en {titulos.count(t)} láminas: «{t}»")
+    for (tit, primero), veces in firmas.items():
+        if len(veces) > 1:
+            detalle = f"primer renglón «{primero[:38]}»" if primero else "sin renglón de cuerpo que las distinga"
+            fallos.append(
+                f"{len(veces)} láminas indistinguibles con el título «{tit[:36]}» "
+                f"({detalle}); califícalas con dos puntos")
 
     # Marcadores sin resolver. Se excluyen los enlaces de Markdown y los
     # argumentos opcionales de los comandos del formato, p. ej.
@@ -147,7 +160,7 @@ def revisar_contenido(qmd):
             f"{vacias} de {paginas} láminas llevan una frase o menos "
             f"({100*vacias/paginas:.0f}%, tope {100*TOPE_VACIAS:.0f}%)")
 
-    return secciones, total, con_nota, fallos, avisos
+    return secciones, total, con_nota, fallos, avisos, titulos
 
 
 def revisar_formato(pdf):
@@ -220,13 +233,36 @@ def main():
     if not qmd.exists():
         sys.exit(f"No existe: {qmd}")
 
-    secciones, total, con_nota, fallos_c, avisos = revisar_contenido(qmd)
-    externa = secciones[:1] == ESPINA[:1] or set(ESPINA) & set(secciones)
+    secciones, total, con_nota, fallos_c, avisos, titulos = revisar_contenido(qmd)
+
+    # La espina puede ir en portadillas (#) o en los títulos de lámina (##),
+    # que es lo habitual. En el segundo caso el título es el nombre de la
+    # sección, quizá calificado: «Lo que vemos: flujo», «Lo que proponemos
+    # para puntos urbanos».
+    def raiz(t):
+        for e in ESPINA:
+            if t == e or t.startswith(e + ":") or t.startswith(e + " "):
+                return e
+        return None
+    en_titulos, visto = [], None
+    for t in titulos:
+        r = raiz(t)
+        if r and r != visto:
+            en_titulos.append(r); visto = r
+    # Si las portadillas llevan los nombres de la espina, mandan ellas; si no,
+    # se buscan en los títulos, que es la convención por omisión.
+    if set(ESPINA) & set(secciones):
+        espina, donde = secciones, "portadillas"
+    elif en_titulos:
+        espina, donde = en_titulos, "títulos"
+    else:
+        espina, donde = secciones, "portadillas"
+    externa = bool(set(ESPINA) & set(espina))
 
     print(f"\n{qmd.name}   {total} láminas, {con_nota} con nota")
-    print(f"secciones: {' → '.join(secciones) if secciones else '(ninguna)'}")
+    print(f"espina (en {donde}): {' → '.join(espina) if espina else '(ninguna)'}")
 
-    if externa and secciones != ESPINA:
+    if externa and espina != ESPINA:
         fallos_c.append(
             "parece una propuesta a un externo pero la espina no coincide.\n"
             f"    esperada: {' → '.join(ESPINA)}")

@@ -150,8 +150,8 @@ plugin.
 BASE="<el directorio base que te informó Claude Code>"
 mkdir -p <carpeta>
 cp -R "$BASE/plantilla/_extensions" <carpeta>/
-cp "$BASE/plantilla/renderizar.sh" <carpeta>/
-chmod +x <carpeta>/renderizar.sh
+cp "$BASE/plantilla/renderizar.sh" "$BASE/plantilla/revisar.py" <carpeta>/
+chmod +x <carpeta>/renderizar.sh <carpeta>/revisar.py
 ```
 
 Después escribe el `.qmd` en esa carpeta con este encabezado:
@@ -215,8 +215,21 @@ guiones al escribir el PDF, así que el archivo de salida deja de coincidir con 
 de entrada y los scripts que lo buscan por nombre fallan en silencio. Usa
 `lima-demografia.qmd`, no `Lima demografía.qmd`.
 
-Compilar sin errores **no** significa que la presentación esté bien. Renderiza las
-láminas a imagen y míralas:
+Compilar sin errores **no** significa que la presentación esté bien. Pasa primero el
+verificador, que revisa lo mecánico:
+
+```bash
+./revisar.py <archivo>.qmd
+```
+
+Comprueba el **contenido** sobre el `.qmd` (palabras por lámina, viñetas, títulos
+repetidos, marcadores `[...]` sin resolver, cobertura de notas y, si es una propuesta a un
+externo, que estén las siete secciones y en orden) y el **formato** sobre los PNG (que
+nada invada la banda de los logotipos ni se salga por los lados, y que la portada sangre).
+Sale con código 1 si encuentra algo.
+
+Lo que el verificador no puede juzgar es si el argumento se entiende, y eso es lo que
+importa. Así que después renderiza las láminas y míralas:
 
 ```bash
 Rscript -e 'n <- pdftools::pdf_info("archivo.pdf")$pages
@@ -225,7 +238,7 @@ Rscript -e 'n <- pdftools::pdf_info("archivo.pdf")$pages
                                   filenames = sprintf("rev-%02d.png", 1:n))'
 ```
 
-Revisa cada PNG y confirma, lámina por lámina:
+El verificador ya dejó estos PNG en `.revision/`. Revísalos y confirma, lámina por lámina:
 
 - Nada de texto cortado, fuera de caja ni encimado.
 - Ningún bloque de código desbordado por la derecha.

@@ -1,6 +1,6 @@
 ---
 name: irem-presentacion
-description: Genera presentaciones en Quarto con el formato institucional Mesoamérica Malaria (IREM) / BID y las compila a PDF. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck" o "unas láminas" para el equipo, para una reunión, para el BID o para un donante; también cuando pida convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
+description: Genera presentaciones en Quarto con el formato institucional Mesoamérica Malaria (IREM) / BID y las compila a PDF. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck" o "unas láminas" para el equipo, para una reunión, para el BID o para un donante; también cuando pida una propuesta para un ministerio, un comité o una contraparte de gobierno, o convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
 ---
 
 # Presentaciones institucionales IREM / BID
@@ -25,6 +25,9 @@ hacerlo.
 Si el usuario no las dio, pregúntalas en un solo mensaje:
 
 - **Audiencia** — de ella depende el nivel técnico y cuánto vocabulario hay que explicar.
+  Pregunta también **si es interna o si va a un externo** (ministerio, donante, comité,
+  contraparte de gobierno): si es externa, la estructura no la inventas, está fija: la
+  trae completa el apartado «Si la presentación es una propuesta a un externo».
 - **Duración** — define el número de láminas (ver presupuesto abajo).
 - **El mensaje único** — la frase que la audiencia debe recordar si olvida todo lo demás.
 
@@ -56,6 +59,85 @@ ejercicios aterriza en 14–22 láminas, no en 30. Antes de fijar el número, cu
 cuántos minutos se van en pantalla en vivo y réstalos del presupuesto.
 
 Aplicar la tabla a ciegas produce presentaciones infladas que no se alcanzan a dar.
+
+### Si la presentación es una propuesta a un externo
+
+Cuando la presentación va a un ministerio, un donante, un comité o una contraparte de
+gobierno, y sirve para **pedir una decisión**, la estructura no se improvisa. Son siete
+secciones, en este orden, y cada título es literal: se usa tal cual, sin sinónimos.
+
+| # | Sección | Qué responde |
+|---|---|---|
+| 1 | **La solicitud** | Qué nos pidieron, quién y cuándo |
+| 2 | **Lo que sabemos** | La evidencia que ya existía antes de que entráramos |
+| 3 | **Lo que vemos** | Lo que encontramos nosotros, por actor o por nivel |
+| 4 | **Lo que consideramos** | Los criterios con los que se descartaron las otras opciones |
+| 5 | **Lo que buscamos** | El fin y el objetivo, en lenguaje de marco lógico |
+| 6 | **Lo que proponemos** | La solución, y cuánto cuesta |
+| 7 | **Siguientes pasos** | Qué se decide hoy, quién lo hace y para cuándo |
+
+Cada una es un `#` de Quarto, así que cada una genera su portadilla.
+
+**La solicitud va primero, antes del contexto.** Es contraintuitivo y es lo que más se
+equivoca: uno quiere explicar el problema antes de llegar al encargo. Para quien escucha
+desde afuera, el contexto sin el encargo es ruido, porque todavía no sabe por qué le están
+hablando.
+
+**«Lo que sabemos» y «lo que vemos» no son lo mismo, y separarlas es lo que da autoridad.**
+La primera es la evidencia documentada que cualquiera podía consultar; la segunda es lo que
+fuimos a levantar. Si las fundes, la propuesta parece opinión. Es normal que «lo que vemos»
+ocupe varias láminas, una por actor o por nivel, y es la sección más larga.
+
+**No te saltes «lo que consideramos».** Es la que convierte la propuesta en una decisión
+razonada en vez de en una preferencia: aquí van los criterios y, si hubo alternativas
+descartadas, por qué se cayeron. Sin esta sección, un comité pregunta «¿y por qué no hicieron
+la otra cosa?» y no hay respuesta en la presentación.
+
+**«Siguientes pasos» no es opcional y es la que más se olvida.** Una propuesta que termina en
+el cierre deja la decisión flotando. Tiene que decir qué se aprueba hoy, quién queda
+responsable y con qué fecha. Si no hay una fecha, no hay siguiente paso.
+
+#### Reparto de láminas
+
+Para una propuesta de 30 minutos, unas 26 láminas:
+
+| Sección | Láminas |
+|---|---|
+| La solicitud | 1 |
+| Lo que sabemos | 2–3 |
+| Lo que vemos | 6–8 |
+| Lo que consideramos | 1–2 |
+| Lo que buscamos | 1 |
+| Lo que proponemos | 5–7 |
+| Siguientes pasos | 1–2 |
+
+«Lo que vemos» y «lo que proponemos» se llevan la mitad del deck entre las dos. Si «lo que
+sabemos» crece más que «lo que vemos», estás presentando un informe de escritorio, no una
+propuesta.
+
+#### Errores que ya se cometieron
+
+Esto sale de revisar propuestas reales del equipo. Todos son de contenido, no de formato:
+
+- **Repetir el mismo título en tres láminas seguidas.** Si tres láminas se llaman «Lo que
+  proponemos para puntos rurales», quien escucha no sabe qué cambió entre una y otra.
+  El título dice qué aporta **esa** lámina: la herramienta, luego el costo, luego las
+  implicaciones.
+- **Rotular una lámina con el título de otra.** Un «flujo actual» y un «flujo propuesto» con
+  el mismo título se leen como la misma lámina repetida, y se pierde justamente la
+  comparación que era el argumento.
+- **Mandar la tabla de costos con columnas vacías.** Una tabla con «Ventajas» y «Desventajas»
+  en blanco frente a un donante dice que la comparación no se hizo. O la llenas o quitas la
+  columna.
+- **Dejar marcadores vivos en las notas.** Cosas como «[poner algo de lo que nos diga
+  Fulano]» sobreviven hasta la versión que se envía. Antes de entregar, busca `[` en las
+  notas.
+- **Escribir notas en dos láminas de veinte.** En una propuesta a un externo las notas
+  importan más que en cualquier otra presentación, porque casi siempre la expone alguien que
+  no la escribió.
+- **69 palabras por lámina.** Es el promedio real de la última propuesta, contra el tope de
+  40. La sección «lo que vemos» es la que más se desborda: cada actor trae cinco hallazgos y
+  se vuelcan todos. Van los dos que cambian la decisión; el resto, a las notas.
 
 ### 3. Monta el proyecto
 
@@ -493,6 +575,14 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Hay al menos un momento participativo cada diez minutos de exposición.
 - La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
+- Ningún título de lámina se repite igual en dos láminas distintas.
+- No queda ningún marcador `[...]` sin resolver, ni en las láminas ni en las notas.
+- Ninguna tabla se entrega con celdas vacías que debieran tener contenido.
+
+Si es una propuesta a un externo, además:
+
+- Están las siete secciones y en su orden, empezando por «La solicitud».
+- «Siguientes pasos» dice qué se decide, quién y con qué fecha.
 
 ## Errores frecuentes
 

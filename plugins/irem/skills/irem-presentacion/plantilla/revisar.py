@@ -185,9 +185,21 @@ def revisar_formato(pdf):
                 for c in range(int(0.16 * W), int(0.88 * W)) if not bl(px[c, y]))
         if z > 60:
             fallos.append(f"lámina {i}: hay contenido en la banda de los logotipos")
-        b = sum(1 for y in range(int(85.0 / mmy), H) for c in range(W) if not bl(px[c, y]))
+        # Entre la base de los logotipos y la franja del pie no va nada. La
+        # franja misma ocupa de 86 mm al borde, así que la ventana vigilada es
+        # la de en medio; si se mirara hasta el borde, la propia franja daría
+        # positivo en todas las láminas.
+        b = sum(1 for y in range(int(83.5 / mmy), int(85.8 / mmy))
+                for c in range(W) if not bl(px[c, y]))
         if b > 60:
-            fallos.append(f"lámina {i}: hay contenido por debajo de los logotipos")
+            fallos.append(f"lámina {i}: hay contenido pegado a la franja del pie")
+        # Y la franja tiene que estar: azul sobre verde, de borde a borde.
+        medio = W // 2
+        azul = px[medio, int(87.0 / mmy)]
+        verde = px[medio, int(89.0 / mmy)]
+        cerca = lambda c, r, g, bb: abs(c[0]-r) < 26 and abs(c[1]-g) < 26 and abs(c[2]-bb) < 26
+        if not cerca(azul, 0x36, 0x7C, 0xBC) or not cerca(verde, 0x98, 0xCE, 0x63):
+            fallos.append(f"lámina {i}: falta la franja azul y verde del pie")
         # 150.5 y no 148.8: el recuadro \realce llega a 149.5 mm por diseño
         # del master, que le da margen derecho de 10.5 mm y no de 11.2.
         d = sum(1 for y in range(int(4.0 / mmy), int(74.0 / mmy))

@@ -171,6 +171,30 @@
 %%
 %%  Todo va en el pie y no en la cabecera: el pie se compone DESPUÉS del
 %%  título de lámina, cuya caja tiene fondo blanco y taparía lo que hubiera.
+%%  --- Franja inferior a sangre -------------------------------------------
+%%  Dos filetes al pie, azul encima de verde, de borde a borde.
+%%
+%%  OJO: esto NO sale de ppt_resultados_IREM_2025_master_logos.pptx. Se buscó
+%%  en la lámina, en su layout y en el slide master, y en los otros doce .pptx
+%%  del equipo: no está en ninguno. Viene de una versión del master posterior,
+%%  vista en una captura, así que las alturas son una lectura de esa imagen y
+%%  no una medición del archivo. Si aparece el .pptx que la trae, vuelve a
+%%  medirla ahí y corrige estas dos longitudes.
+\newlength{\iremFranjaAzul}\setlength{\iremFranjaAzul}{2mm}
+\newlength{\iremFranjaVerde}\setlength{\iremFranjaVerde}{2mm}
+\newcommand{\iremFranjaNodos}{%
+  \fill[iremazul]
+    ([shift={(0mm,\iremFranjaVerde)}]current page.south west) rectangle
+    ([shift={(0mm,\dimexpr\iremFranjaVerde+\iremFranjaAzul\relax)}]current page.south east);
+  \fill[iremverde]
+    (current page.south west) rectangle
+    ([shift={(0mm,\iremFranjaVerde)}]current page.south east);%
+}
+%%  Comando público, por si hace falta en una lámina `plain` suelta.
+\newcommand{\franjaPie}{%
+  \begin{tikzpicture}[remember picture, overlay]\iremFranjaNodos\end{tikzpicture}%
+}
+
 \newcommand{\iremLogosNodos}{%
   \node[anchor=north west, inner sep=0pt]
     at ([shift={(2.0mm,-77.53mm)}]current page.north west)
@@ -181,13 +205,13 @@
 }
 %%  Comando público para las láminas `plain`, que no llevan pie.
 \newcommand{\logosPie}{%
-  \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\end{tikzpicture}%
+  \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\iremFranjaNodos\end{tikzpicture}%
 }
 
 \setbeamertemplate{headline}{}
 \setbeamertemplate{footline}{%
   \ifnum\insertframenumber>1\relax
-    \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\end{tikzpicture}%
+    \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\iremFranjaNodos\end{tikzpicture}%
   \fi
 }
 %% Sin numeración de láminas, por decisión de formato.
@@ -309,6 +333,7 @@
         at ([shift={(80mm,-34.82mm)}]current page.north west)
         {\bfseries\color{iremazul}\fontsize{21}{26}\selectfont #1};
       \iremLogosNodos
+      \iremFranjaNodos
     \end{tikzpicture}%
   \end{frame}
   \endgroup
@@ -403,6 +428,9 @@
       at ([shift={(80mm,-78.93mm)}]current page.north west)
       {\color{grisoscuro}\fontsize{8}{11}\selectfont
        Iniciativa Regional para la Eliminación de la Malaria};
+    %% El cierre es `plain` y no pasa por el pie, así que la franja se dibuja
+    %% aquí a mano. Sin esto es la única lámina del deck que se queda sin ella.
+    \iremFranjaNodos
   \end{tikzpicture}%
 }
 

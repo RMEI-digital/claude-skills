@@ -538,11 +538,21 @@ Convertida del lienzo de PowerPoint (338,667 × 190,5 mm) al de Beamer
 | Cuerpo, primer renglón | y = 23,95 mm | margen 11,2 mm a cada lado |
 | Logotipo mesoamérica | (2,0 , 77,5) mm | 21,0 mm de ancho |
 | Logotipo BID | (146,9 , 78,5) mm | 9,8 mm de ancho |
+| Franja azul del pie | y = 86,0 mm | a sangre, 2,0 mm de alto |
+| Franja verde del pie | y = 88,0 mm | a sangre, 2,0 mm de alto |
 
 **Las láminas no llevan numeración**, por decisión de formato. No la agregues.
 
 **Este master no lleva chevron.** Si vienes de la plantilla anterior de IREM, ese
 elemento ya no existe.
+
+**La franja azul y verde del pie no sale del `.pptx`.** Se buscó en la lámina, en su
+layout, en el slide master y en los otros doce `.pptx` del equipo: no está en ninguno.
+Viene de una versión posterior del master, vista en una captura de pantalla, así que las
+dos alturas son una lectura de esa imagen y no una medición del archivo. Se controlan con
+`\iremFranjaAzul` y `\iremFranjaVerde`; si aparece el `.pptx` que la trae, mídela ahí y
+corrige esas dos longitudes. Va en todas las láminas menos la portada, que tiene su
+propia composición al pie con la cintilla de donantes.
 
 **Los logotipos del pie van al revés que en las plantillas viejas**: mesoamérica
 MALARIA a la izquierda y grande, BID a la derecha y pequeño. El BID del pie va
@@ -621,6 +631,7 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Hay al menos un momento participativo cada diez minutos de exposición.
 - La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
+- Todas las láminas menos la portada llevan la franja azul y verde al pie.
 - Ninguna sección lleva portadilla con menos de dos láminas de contenido.
 - Las láminas de una frase (portadillas, despliegue y cierre) no pasan de un tercio.
 - Ningún título de lámina se repite igual en dos láminas distintas.

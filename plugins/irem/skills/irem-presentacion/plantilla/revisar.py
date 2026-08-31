@@ -23,6 +23,11 @@ from pathlib import Path
 TOPE_PALABRAS = 40
 TOPE_VINETAS = 4
 TOPE_CARACTERES_VINETA = 118  # unos dos renglones a 10 pt en 137.6 mm
+MIN_LAMINAS_POR_SECCION = 2   # menos que esto y la sección no se gana su portadilla
+LAMINAS_POR_DISPLAY = 6       # una lámina de una sola frase por cada seis de contenido
+TOPE_VACIAS = 1 / 3           # portadillas + despliegue + cierre sobre el total
+
+DISPLAY = r"\\(?:ideaGrande|cifra|pregunta)\b"
 
 ESPINA = [
     "La solicitud", "Lo que sabemos", "Lo que vemos", "Lo que consideramos",
@@ -73,11 +78,22 @@ def revisar_contenido(qmd):
 
     secciones = [t for n, t, _ in laminas(cuerpo) if n == 1]
     titulos, con_nota, total = [], 0, 0
+    display, seguidas, max_seguidas, por_seccion, actual = 0, 0, 0, {}, None
 
     for nivel, titulo, cont in laminas(cuerpo):
-        if nivel != 2:
+        if nivel == 1:
+            actual = titulo
+            por_seccion[actual] = 0
             continue
         total += 1
+        if actual:
+            por_seccion[actual] += 1
+        if re.search(DISPLAY, cont):
+            display += 1
+            seguidas += 1
+            max_seguidas = max(max_seguidas, seguidas)
+        else:
+            seguidas = 0
         vis, en_latex = texto_visible(cont)
         if "{.notes}" in cont or "\\note{" in cont:
             con_nota += 1
@@ -107,6 +123,29 @@ def revisar_contenido(qmd):
 
     if total and con_nota / total < 0.5:
         avisos.append(f"solo {con_nota} de {total} láminas tienen nota del presentador")
+
+    # Portadillas que no se ganan su lugar.
+    for nombre, n in por_seccion.items():
+        if n < MIN_LAMINAS_POR_SECCION:
+            fallos.append(
+                f"«{nombre}» tiene {n} lámina de contenido y aun así lleva portadilla; "
+                f"quítale el # o dale una segunda")
+
+    # Láminas de una sola afirmación.
+    if display and total // LAMINAS_POR_DISPLAY < display:
+        fallos.append(
+            f"{display} láminas de una sola frase para {total} de contenido "
+            f"(máximo {max(1, total // LAMINAS_POR_DISPLAY)})")
+    if max_seguidas > 1:
+        fallos.append(f"{max_seguidas} láminas de una sola frase seguidas")
+
+    # Cuánto del deck va casi en blanco: portada + portadillas + despliegue + cierre.
+    paginas = 1 + len(secciones) + total
+    vacias = len(secciones) + display + 1
+    if paginas and vacias / paginas > TOPE_VACIAS:
+        fallos.append(
+            f"{vacias} de {paginas} láminas llevan una frase o menos "
+            f"({100*vacias/paginas:.0f}%, tope {100*TOPE_VACIAS:.0f}%)")
 
     return secciones, total, con_nota, fallos, avisos
 

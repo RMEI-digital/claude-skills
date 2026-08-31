@@ -60,6 +60,33 @@ cuántos minutos se van en pantalla en vivo y réstalos del presupuesto.
 
 Aplicar la tabla a ciegas produce presentaciones infladas que no se alcanzan a dar.
 
+#### Cuántas láminas pueden llevar una frase sola
+
+Es la cuenta que más se descuida, porque cada lámina vacía por separado parece
+defendible y solo se nota el abuso al sumarlas. En el master hay 20 láminas: portada,
+guía de estilo, tres portadillas, cierre y **catorce de contenido denso**. Una de cada
+cuatro lleva una frase o menos.
+
+Y algo que conviene tener presente: **el master no tiene ni una sola lámina de una sola
+afirmación.** Ni `\ideaGrande`, ni `\cifra`, ni `\pregunta`. Esos tres comandos vienen
+de la plantilla anterior, que era para charlas de capacitación, no para reportar. Siguen
+disponibles porque funcionan, pero son un préstamo y hay que tratarlos como tal.
+
+Dos reglas, y las dos se verifican solas con `./revisar.py`:
+
+- **Ninguna sección con menos de dos láminas de contenido lleva portadilla.** Es la misma
+  regla de siempre («si una sección tiene una sola lámina, no es sección»), pero ahora
+  importa el doble: cada portadilla es una lámina de una frase, y siete secciones son
+  siete láminas casi vacías. La sección puede seguir existiendo como argumento con su
+  nombre en el título de la lámina, sin `#` y por lo tanto sin divisoria.
+- **Como máximo una lámina de una sola afirmación por cada seis de contenido, y nunca dos
+  seguidas.** La que sí se gana el lugar es la del final, la que repite el mensaje único.
+  `\pregunta` no va en una propuesta a un externo: un comité no levanta la mano.
+
+Entre portadillas, láminas de despliegue y cierre, **no más de un tercio del total** debe
+llevar una frase o menos. Si te pasas, casi siempre es porque hay demasiadas secciones
+para el tamaño del deck, no porque sobren cifras.
+
 ### Si la presentación es una propuesta a un externo
 
 Cuando la presentación va a un ministerio, un donante, un comité o una contraparte de
@@ -110,6 +137,12 @@ Para una propuesta de 30 minutos, unas 26 láminas:
 | Lo que buscamos | 1 |
 | Lo que proponemos | 5–7 |
 | Siguientes pasos | 1–2 |
+
+**Siete secciones cuestan siete portadillas.** Esa es la letra pequeña de esta espina: solo
+se paga sola en una propuesta de veinte láminas de contenido para arriba. Por debajo de eso,
+las secciones flacas no llevan `#`: su nombre va en el título de la lámina y te ahorras la
+divisoria. Una propuesta de trece láminas con siete portadillas es la mitad del deck en
+blanco.
 
 «Lo que vemos» y «lo que proponemos» se llevan la mitad del deck entre las dos. Si «lo que
 sabemos» crece más que «lo que vemos», estás presentando un informe de escritorio, no una
@@ -588,6 +621,8 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Hay al menos un momento participativo cada diez minutos de exposición.
 - La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
+- Ninguna sección lleva portadilla con menos de dos láminas de contenido.
+- Las láminas de una frase (portadillas, despliegue y cierre) no pasan de un tercio.
 - Ningún título de lámina se repite igual en dos láminas distintas.
 - No queda ningún marcador `[...]` sin resolver, ni en las láminas ni en las notas.
 - Ninguna tabla se entrega con celdas vacías que debieran tener contenido.

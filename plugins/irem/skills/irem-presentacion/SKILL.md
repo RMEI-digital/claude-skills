@@ -317,6 +317,21 @@ blanco: el PDF sale bien y la revisión por PNG lo muestra roto. Es la peor
 combinación posible, porque lleva a «arreglar» algo que no estaba mal. Los assets
 del formato están todos en PNG por esta razón.
 
+**Y la trampa muerde también al revés, midiendo un PDF ajeno.** El PDF del master trae
+su foto de portada en JPEG. Al renderizarlo con `pdftools` para tomarle medidas, la
+portada sale sin foto y uno concluye que el master no la lleva. Sí la lleva. Cuando
+midas un PDF que no compilaste tú, renderízalo con Quick Look, que no tiene ese defecto:
+
+```bash
+qlmanage -t -s 2666 -o <carpeta> <archivo>.pdf
+```
+
+Comprueba antes si el PDF trae JPEG, y si trae, no te fíes de poppler:
+
+```bash
+python3 -c "import re; print(len(re.findall(rb'/DCTDecode', open('archivo.pdf','rb').read())))"
+```
+
 ## Elementos del formato
 
 Láminas normales en Markdown: `#` abre sección (genera portadilla automática), `##`
@@ -538,21 +553,19 @@ Convertida del lienzo de PowerPoint (338,667 × 190,5 mm) al de Beamer
 | Cuerpo, primer renglón | y = 23,95 mm | margen 11,2 mm a cada lado |
 | Logotipo mesoamérica | (2,0 , 77,5) mm | 21,0 mm de ancho |
 | Logotipo BID | (146,9 , 78,5) mm | 9,8 mm de ancho |
-| Franja azul del pie | y = 86,0 mm | a sangre, 2,0 mm de alto |
-| Franja verde del pie | y = 88,0 mm | a sangre, 2,0 mm de alto |
+| Franja azul del pie | y = 86,16 mm | a sangre, 2,22 mm de alto |
+| Franja verde del pie | y = 88,38 mm | a sangre, 1,62 mm de alto |
 
 **Las láminas no llevan numeración**, por decisión de formato. No la agregues.
 
 **Este master no lleva chevron.** Si vienes de la plantilla anterior de IREM, ese
 elemento ya no existe.
 
-**La franja azul y verde del pie no sale del `.pptx`.** Se buscó en la lámina, en su
-layout, en el slide master y en los otros doce `.pptx` del equipo: no está en ninguno.
-Viene de una versión posterior del master, vista en una captura de pantalla, así que las
-dos alturas son una lectura de esa imagen y no una medición del archivo. Se controlan con
-`\iremFranjaAzul` y `\iremFranjaVerde`; si aparece el `.pptx` que la trae, mídela ahí y
-corrige esas dos longitudes. Va en todas las láminas menos la portada, que tiene su
-propia composición al pie con la cintilla de donantes.
+**La franja azul y verde del pie no está en el `.pptx`, pero sí en el PDF.** Se buscó en
+la lámina, en su layout, en el slide master y en los otros doce `.pptx` del equipo: en
+ninguno. En `ppt_resultados_IREM_2025_master_logos.pdf`, exportado del mismo deck, está
+en las veinte láminas con el mismo valor al centésimo. Cuando los dos archivos discrepan,
+**manda el PDF**, que es lo que la gente ve. Va en todas las láminas, portada incluida.
 
 **Los logotipos del pie van al revés que en las plantillas viejas**: mesoamérica
 MALARIA a la izquierda y grande, BID a la derecha y pequeño. El BID del pie va
@@ -572,8 +585,8 @@ logotipo incrustado. Por eso aquí sí se posiciona elemento por elemento.
 | Pieza | Posición | Tamaño |
 |---|---|---|
 | Logotipo mesoamérica | (7,7 , 8,4) mm | 35,5 mm de ancho |
-| Barra verde | (6,6 , 23,7) mm | 50,6 × 4,4 mm |
-| Volanta | centrada en la barra | máx. 47 mm |
+| Barra verde | (6,6 , 23,7) mm | 50,6 × 4,4 mm, esquinas de 0,66 mm |
+| Volanta | centrada en la barra | máx. 47 mm, en blanco |
 | Título | (6,6 , 30,7) mm | 73,5 mm de ancho |
 | Autoría y fecha | (7,7 , 67,2) mm | — |
 | Cintilla de donantes | (7,1 , 76,0) mm | 66,3 mm de ancho |

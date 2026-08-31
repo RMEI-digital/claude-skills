@@ -99,10 +99,15 @@
 \setbeamerfont{footline}{size=\fontsize{7}{9}\selectfont}
 
 %% --- Márgenes --------------------------------------------------------------
-%%  El cuerpo se alinea con el título: PPT x=23.7 mm sobre 338.667 → 11.2 mm.
-%%  Margen derecho simétrico, así el cuerpo mide los mismos 137.6 mm que el
-%%  título y ningún renglón queda más largo que su encabezado.
-\setbeamersize{text margin left=11.2mm, text margin right=11.2mm}
+%%  El cuerpo se alinea con el título, y los dos van a 12.5 mm.
+%%
+%%  Ojo con este número: el placeholder del master está en x=23.7 mm, que
+%%  convertido daría 11.2, pero el TEXTO no arranca ahí. PowerPoint mete un
+%%  margen interno de 0.1 in en toda caja de texto, así que lo que se ve
+%%  empieza en 26.5 mm PPT → 12.5 mm. Medido en el PDF del master en las
+%%  láminas 3, 11, 12, 13 y 17: siempre 26.4 a 26.5. Si tomas la coordenada
+%%  del XML sin sumarle ese margen, toda la lámina queda 1.3 mm corrida.
+\setbeamersize{text margin left=12.2mm, text margin right=12.2mm}
 \setlength{\parskip}{0.5em}
 
 %%  El entorno `columns` de beamer ignora esos márgenes: sin `onlytextwidth`
@@ -128,7 +133,11 @@
 %%  error de composición.
 \setbeamertemplate{itemize item}{}
 \setbeamertemplate{itemize subitem}{\color{grisoscuro}\scriptsize\raisebox{0.15ex}{\textbullet}}
-\setlength{\leftmargini}{6.0mm}
+%%  Sin sangría en el primer nivel: en el PDF del master el cuerpo arranca en
+%%  la misma x que el título (26.4 contra 26.5 mm), no 6 mm más adentro. El
+%%  layout declara marL=457200, pero eso no es lo que se compone; manda el
+%%  render. El segundo nivel sí entra, y ahí aparece el punto.
+\setlength{\leftmargini}{0mm}
 \setlength{\leftmarginii}{6.0mm}
 
 %%  El aire entre puntos hay que meterlo parcheando \itemize, no por plantilla.
@@ -174,14 +183,19 @@
 %%  --- Franja inferior a sangre -------------------------------------------
 %%  Dos filetes al pie, azul encima de verde, de borde a borde.
 %%
-%%  OJO: esto NO sale de ppt_resultados_IREM_2025_master_logos.pptx. Se buscó
-%%  en la lámina, en su layout y en el slide master, y en los otros doce .pptx
-%%  del equipo: no está en ninguno. Viene de una versión del master posterior,
-%%  vista en una captura, así que las alturas son una lectura de esa imagen y
-%%  no una medición del archivo. Si aparece el .pptx que la trae, vuelve a
-%%  medirla ahí y corrige estas dos longitudes.
-\newlength{\iremFranjaAzul}\setlength{\iremFranjaAzul}{2mm}
-\newlength{\iremFranjaVerde}\setlength{\iremFranjaVerde}{2mm}
+%%  Medida en ppt_resultados_IREM_2025_master_logos.PDF, no en el .pptx: el
+%%  .pptx no la trae en ninguna parte (ni en las láminas, ni en los layouts,
+%%  ni en el slide master), pero el PDF exportado del mismo deck sí, y en las
+%%  veinte láminas con el mismo valor al centésimo. Cuando los dos archivos
+%%  discrepan, manda el PDF, que es lo que la gente ve.
+%%
+%%    tope de la franja  182.37 mm PPT → 86.16 mm
+%%    azul                 4.70 mm PPT →  2.22 mm
+%%    verde                3.43 mm PPT →  1.62 mm
+%%
+%%  Va en TODAS las láminas, portada incluida.
+\newlength{\iremFranjaAzul}\setlength{\iremFranjaAzul}{2.22mm}
+\newlength{\iremFranjaVerde}\setlength{\iremFranjaVerde}{1.62mm}
 \newcommand{\iremFranjaNodos}{%
   \fill[iremazul]
     ([shift={(0mm,\iremFranjaVerde)}]current page.south west) rectangle
@@ -257,8 +271,11 @@
   %% La volanta se compone ANTES de abrir el tikzpicture. Dentro, TikZ agrupa
   %% cada elemento del path y la asignación del box se pierde: la barra sale
   %% pintada pero vacía, sin ningún error que lo delate.
+  %% La volanta va en BLANCO sobre la barra, no en gris. El XML no lo dice
+  %% (hereda, y la herencia acaba en negro), pero en el PDF del master los
+  %% píxeles claros dentro de la barra son #ECEBE7. Manda el render.
   \sbox{\iremCajaVolanta}{%
-    \bfseries\color{grisoscuro}\fontsize{7}{9}\selectfont\hyphenchar\font=-1\relax
+    \bfseries\color{grissuave}\fontsize{7}{9}\selectfont\hyphenchar\font=-1\relax
     \insertsubtitle}%
   \begin{tikzpicture}[remember picture, overlay]
     \node[anchor=north west, inner sep=0pt]
@@ -269,7 +286,13 @@
       {\includegraphics[width=35.46mm]{logo-mesoamerica.png}};
     %% Barra verde con la volanta encima. La volanta sale del `subtitle`:
     %% en el master ese renglón dice el evento y el mes, en versalitas.
-    \fill[verdeportada]
+    %% Esquinas redondeadas: medido en el PDF del master, el sangrado de la
+    %% esquina cae de 1.40 mm PPT a cero, o sea 0.66 mm en Beamer. Es una
+    %% curva discreta; a tamaño de pantalla parece más pronunciada de lo que
+    %% es porque en la lámina 1 del master hay DOS barras superpuestas (una
+    %% del layout y otra que el autor puso encima, desfasadas 4.2 mm). La
+    %% buena es la del layout, que es la que está aquí.
+    \fill[verdeportada, rounded corners=0.66mm]
       ([shift={(6.57mm,-23.70mm)}]current page.north west) rectangle
       ([shift={(57.12mm,-28.14mm)}]current page.north west);
     \ifx\insertsubtitle\empty\else
@@ -301,18 +324,23 @@
     \node[anchor=north west, inner sep=0pt]
       at ([shift={(7.10mm,-75.95mm)}]current page.north west)
       {\includegraphics[width=66.30mm]{cintilla-donantes.png}};
+    %% La portada también lleva franja: en el PDF del master está en las 20
+    %% láminas sin excepción. El pie no se compone en la lámina 1, así que
+    %% aquí se dibuja a mano.
+    \iremFranjaNodos
   \end{tikzpicture}%
 }
 
 %% --- Título de lámina ------------------------------------------------------
 %%  PPT (23.7, 11.0) 291.3 x 15.3 → (11.2, 5.20) 137.6 x 7.23.
-%%  Los dos \vspace están calibrados midiendo el PNG, no a ojo: con 3.2 mm el
-%%  centro óptico del título cae en 8.8 mm, que es el del master, y con 6.85
-%%  el primer renglón del cuerpo arranca en 23.95 mm, que es donde el master
-%%  abre su marco de texto. Si tocas uno, vuelve a medir los dos.
+%%  Los dos \vspace están calibrados contra el PDF del master, no a ojo. La
+%%  referencia es el tope de las mayúsculas del título, que es lo único
+%%  estable: el centro de la caja cambia según qué letras lleve el título.
+%%  En el master ese tope cae en 12.8 mm PPT → 6.05 mm, y el primer renglón
+%%  del cuerpo entre 23.5 y 25.2. Si tocas uno, vuelve a medir los dos.
 \setbeamertemplate{frametitle}{%
-  \vspace*{3.2mm}%
-  \begin{beamercolorbox}[wd=\paperwidth, leftskip=11.2mm, rightskip=11.2mm]{frametitle}%
+  \vspace*{2.78mm}%
+  \begin{beamercolorbox}[wd=\paperwidth, leftskip=12.2mm, rightskip=12.2mm]{frametitle}%
     \usebeamerfont{frametitle}\insertframetitle\par%
   \end{beamercolorbox}%
   \vspace{6.85mm}%

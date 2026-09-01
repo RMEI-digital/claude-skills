@@ -72,7 +72,13 @@ afirmación.** Ni `\ideaGrande`, ni `\cifra`, ni `\pregunta`. Esos tres comandos
 de la plantilla anterior, que era para charlas de capacitación, no para reportar. Siguen
 disponibles porque funcionan, pero son un préstamo y hay que tratarlos como tal.
 
-Dos reglas, y las dos se verifican solas con `./revisar.py`:
+**La cuenta se hace midiendo tinta, no contando comandos.** `./revisar.py` calcula qué
+porcentaje del área de contenido lleva tinta en cada lámina y marca las que bajan del 2%.
+Es la única manera honesta de verlo: contar portadillas y comandos de despliegue se queda
+corto, porque no ve la lámina de dos viñetas sueltas que en pantalla también se lee como
+vacía. El tope es **15% del deck**.
+
+Dos reglas más, y las dos se verifican solas:
 
 - **Ninguna sección con menos de dos láminas de contenido lleva portadilla.** Es la misma
   regla de siempre («si una sección tiene una sola lámina, no es sección»), pero ahora
@@ -128,11 +134,15 @@ La ventaja no es solo de estilo. Una propuesta real del equipo tiene 19 láminas
 dos** llevan una frase o menos (la portada y el cierre): un 11%. Con portadillas para las
 siete secciones, ese mismo deck se iría a la mitad en blanco.
 
-**Con `#` y portadillas, solo si la propuesta pasa de veinte láminas de contenido** y cada
-sección llega a dos o más. Es lo que hace el master de resultados, que tiene secciones
-grandes. Por debajo de ese tamaño, siete secciones son siete láminas casi vacías.
+**Las portadillas son la excepción, no la alternativa.** Medido sobre las mismas tres
+presentaciones, con `#` para cada sección quedaban entre el 38 y el 40% de las láminas con
+una frase o menos; pasando la espina a los títulos, **cero**. El master de resultados sí
+usa tres portadillas, pero para catorce láminas de contenido y en secciones grandes. Si vas
+a poner una, que la sección tenga al menos cuatro láminas.
 
-En Quarto: sin portadillas, todo va en `##` y no se usa `#` en absoluto.
+En Quarto: sin portadillas, todo va en `##` y no se usa `#` en absoluto. Esto vale también
+para charlas internas, donde el título hace el mismo trabajo («Cómo nos fue: lo que sí
+funcionó», «Los números: despliegues y reversiones»).
 
 **La solicitud va primero, antes del contexto.** Es contraintuitivo y es lo que más se
 equivoca: uno quiere explicar el problema antes de llegar al encargo. Para quien escucha

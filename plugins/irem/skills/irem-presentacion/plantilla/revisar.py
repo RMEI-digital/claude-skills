@@ -25,7 +25,8 @@ TOPE_VINETAS = 4
 TOPE_CARACTERES_VINETA = 118  # unos dos renglones a 10 pt en 137.6 mm
 MIN_LAMINAS_POR_SECCION = 2   # menos que esto y la sección no se gana su portadilla
 LAMINAS_POR_DISPLAY = 6       # una lámina de una sola frase por cada seis de contenido
-TOPE_VACIAS = 1 / 3           # portadillas + despliegue + cierre sobre el total
+TOPE_VACIAS = 0.15            # proporción máxima de láminas con una frase o menos
+TINTA_MINIMA = 2.0            # % de tinta bajo el cual la lámina es "una frase"
 
 DISPLAY = r"\\(?:ideaGrande|cifra|pregunta)\b"
 
@@ -156,9 +157,9 @@ def revisar_contenido(qmd):
     paginas = 1 + len(secciones) + total
     vacias = len(secciones) + display + 1
     if paginas and vacias / paginas > TOPE_VACIAS:
-        fallos.append(
-            f"{vacias} de {paginas} láminas llevan una frase o menos "
-            f"({100*vacias/paginas:.0f}%, tope {100*TOPE_VACIAS:.0f}%)")
+        avisos.append(
+            f"por estructura, {vacias} de {paginas} láminas llevarían una frase o menos; "
+            f"la cuenta buena es la de tinta, más abajo")
 
     return secciones, total, con_nota, fallos, avisos, titulos
 
@@ -180,12 +181,25 @@ def revisar_formato(pdf):
         return None, [f"no pude renderizar los PNG: {r.stderr.strip()[:200]}"]
 
     fallos = []
+    flacas = []
     for i, f in enumerate(pngs, 1):
         im = Image.open(f).convert("RGB")
         W, H = im.size
         px = im.load()
         mmy, mmx = 90.0 / H, 160.0 / W
         bl = lambda p: all(v > 246 for v in p)
+
+        # Cuánta tinta lleva de verdad la lámina. Es la única manera honesta de
+        # detectar la lámina de una sola frase: contar portadillas y comandos
+        # de despliegue se queda corto, porque no ve la lámina de dos viñetas
+        # sueltas que en pantalla también se lee como vacía. Se mide solo el
+        # área de contenido, sin los logotipos ni la franja.
+        y0, y1 = int(4 / mmy), int(74 / mmy)
+        blando = lambda p: all(v > 240 for v in p)
+        tinta = sum(1 for y in range(y0, y1) for x in range(W) if not blando(px[x, y]))
+        pct = 100.0 * tinta / ((y1 - y0) * W)
+        if i > 1 and pct < TINTA_MINIMA:
+            flacas.append((i, pct))
         if i == 1:
             arriba = sum(1 for c in range(int(0.60 * W), W) if not bl(px[c, 0]))
             der = sum(1 for y in range(0, int(0.93 * H)) if not bl(px[W - 1, y]))

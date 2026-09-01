@@ -1,6 +1,6 @@
 ---
 name: irem-security-audit
-description: Auditoría de seguridad completa de un repositorio (código + historial de git), pensada para apps pequeñas de salud/datos personales tipo Flask/Django/Node en Heroku/Vercel. Corre TruffleHog (secretos vivos en todo el historial), Bandit y Semgrep (SAST), VVAH (SAST agéntico) y una revisión manual de CONTROLES AUSENTES (auth, validación de firma). Produce SECURITY-REVIEW.md + SECURITY-REVIEW-RESUMEN.md + salidas crudas en security-review/. Úsala cuando el usuario pida "revisión/auditoría de seguridad de este repo", "corre los scripts de seguridad", "revisa secretos", o /irem-security-audit.
+description: Auditoría de seguridad completa de un repositorio (código + historial de git), pensada para apps pequeñas de salud/datos personales tipo Flask/Django/Node en Heroku/Vercel. Corre TruffleHog (secretos vivos en todo el historial), Bandit y Semgrep (SAST), opcionalmente VVAH (SAST agéntico) y una revisión manual de CONTROLES AUSENTES (auth, validación de firma). Produce SECURITY-REVIEW.md + SECURITY-REVIEW-RESUMEN.md + salidas crudas en security-review/. Úsala cuando el usuario pida "revisión/auditoría de seguridad de este repo", "corre los scripts de seguridad", "revisa secretos", o /irem-security-audit.
 ---
 
 # Auditoría de seguridad de un repositorio
@@ -21,7 +21,7 @@ no bloquees toda la auditoría por una herramienta.
 | **TruffleHog** | Secretos vivos en todo el historial de git | `brew install trufflehog` (macOS) · o binario desde github.com/trufflesecurity/trufflehog |
 | **Bandit** | SAST para Python | `uv tool install bandit` |
 | **Semgrep** | SAST con rulesets Flask/OWASP/secrets | `uv tool install semgrep` |
-| **VVAH** (`vvaharness`) | SAST agéntico (encadena hallazgos) | `uv tool install vvaharness` |
+| **VVAH** (`vvaharness`) | SAST agéntico (encadena hallazgos). **Opcional**: es el paso más lento y gasta API | `uv tool install vvaharness` |
 | **uv** | Gestor para instalar/correr las de arriba | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **git** | Historial y ramas | ya viene con el sistema / Xcode CLT |
 
@@ -31,7 +31,7 @@ Comprobación rápida de qué está instalado (correr al empezar):
 for t in trufflehog bandit semgrep uv git; do
   command -v "$t" >/dev/null 2>&1 && printf "%-12s ✓\n" "$t" || printf "%-12s ✗ FALTA\n" "$t"
 done
-uv tool list 2>/dev/null | grep -i vva || echo "vvaharness ✗ FALTA (uv tool install vvaharness)"
+uv tool list 2>/dev/null | grep -i vva || echo "vvaharness ✗ falta (opcional, ver Paso 3)"
 ```
 
 Instalar todo de una vez (macOS con Homebrew + uv):
@@ -40,7 +40,7 @@ Instalar todo de una vez (macOS con Homebrew + uv):
 brew install trufflehog
 uv tool install bandit
 uv tool install semgrep
-uv tool install vvaharness
+uv tool install vvaharness   # opcional, solo si vas a correr el Paso 3
 ```
 
 > Nota para quien recibe esta skill compartida: el archivo `SKILL.md` viaja solo con las
@@ -67,6 +67,9 @@ SAST automático**. Nunca declares el repo "limpio" solo porque Bandit/Semgrep n
    - Si SÍ hay acceso → puedes hacer pruebas, pero lee la sección "Pruebas seguras" abajo.
 3. **Contexto del dominio.** ¿Qué datos maneja? (PII, datos de salud, GPS). Esto define la gravedad
    real y las implicaciones legales (p. ej. Ley 172-13 en RD para datos de salud).
+4. **¿Corremos VVAH (Paso 3)?** Es opcional: tarda bastante y consume API de pago. Los Pasos 1, 2
+   y 4 son los que sostienen la auditoría. Pregúntalo en la misma tanda que lo anterior y, si el
+   usuario no lo pide explícitamente, **sáltalo** y anótalo en el alcance del reporte.
 
 ## Paso 0 — Reconocimiento
 
@@ -109,19 +112,44 @@ Si Semgrep da 0 hallazgos, **anótalo explícitamente como resultado negativo co
 "todo bien" (ver Regla de oro). Escribe en `security-review/semgrep.txt` qué hallazgos manuales
 (controles ausentes) NO puede ver el SAST.
 
-## Paso 3 — SAST agéntico (VVAH / vvaharness)
+## Paso 3 (OPCIONAL) — SAST agéntico (VVAH / vvaharness)
 
 VVAH modela amenazas y **encadena** hallazgos (encontró el takeover por SharePoint y la inyección
-de fórmulas Excel que ningún otro tool vio). Se corre vía `uv`:
+de fórmulas Excel que ningún otro tool vio). A cambio es **el paso más lento de toda la auditoría y
+gasta API de pago** (Anthropic SDK o CLI), así que **no se corre por defecto**: solo si el usuario
+lo pidió en la pregunta 4 de "Antes de empezar". Sin este paso la auditoría sigue siendo válida:
+dilo en el alcance del reporte ("Paso 3 no ejecutado a pedido del usuario") y sigue.
+
+> ⚠️ **Nunca corras `vvaharness scan` sin `--stop-after s9`.** El perfil por defecto trae
+> `step_remediate.enabled: true`, así que el agente de remediación (paso s10) **edita los archivos
+> fuente del repo que estás auditando**. Eso rompe la regla de no tocar el código, contamina el
+> working tree y arruina la distinción entre "producción vulnerable" y "fix local" del reporte.
+> `--stop-after s9` es detección sola, sin cambios en el código.
+
+```bash
+vvaharness doctor                              # credenciales y conectividad, read-only
+vvaharness estimate --repo .                   # alcance y costo aproximado, sin gasto de API
+vvaharness scan --repo . --stop-after s9       # detección sola, NO edita código
+```
+
+Enséñale al usuario la salida de `estimate` y confirma antes de lanzar el `scan`. Si `doctor` falla
+por credenciales (falta `ANTHROPIC_SDK_API_KEY` o el backend CLI), no insistas: salta el paso y
+dilo en el reporte.
+
+Las salidas **no** caen en `security-review/vvah/`: VVAH escribe dentro del repo, en
+`<repo>/security-scan/` (y en `<repo>/security-remediation/` solo si se dejó correr s10, que aquí
+no pasa). Comprueba con `ls security-scan/` qué generó y copia los artefactos al lugar de siempre:
 
 ```bash
 mkdir -p security-review/vvah
-uv tool run vvaharness --help   # confirma flags de la versión instalada primero
-# Correr sobre el repo, guardando SARIF + reporte md + log en security-review/vvah/
+ls security-scan/ && cp -R security-scan/. security-review/vvah/
 ```
 
+`security-scan/` queda en el working tree del repo auditado: no lo commitees, y menciónalo al
+usuario para que lo borre o lo ignore cuando termine.
+
 Si VVAH no está instalado: `uv tool install vvaharness`. Si falla o no aplica al stack, sáltalo y
-dilo en el reporte — no bloquees la auditoría por esto.
+dilo en el reporte, no bloquees la auditoría por esto.
 
 ## Paso 4 — Revisión manual de CONTROLES AUSENTES (la que más encuentra)
 
@@ -165,8 +193,9 @@ El usuario suele querer un **ejemplo real** para convencer a su equipo. Reglas:
    Cada hallazgo: qué es, prueba/evidencia, impacto, fix concreto.
 2. **`SECURITY-REVIEW-RESUMEN.md`** — versión corta en español: "lo urgente en una frase", tabla de
    "acciones para hoy" con comandos, y una tabla de todos los hallazgos. Pensada para el equipo.
-3. **`security-review/`** — salidas crudas: `trufflehog.json`, `bandit.txt`, `semgrep.txt`,
-   `vvah/`. En los .txt de secretos, **omitir los valores** y decir por qué.
+3. **`security-review/`** — salidas crudas: `trufflehog.json`, `bandit.txt`, `semgrep.txt`, y
+   `vvah/` solo si se corrió el Paso 3. En los .txt de secretos, **omitir los valores** y decir por
+   qué. Si el Paso 3 se saltó, el reporte debe decirlo en el alcance, no dejarlo en silencio.
 
 ## Convenciones de escritura del reporte
 

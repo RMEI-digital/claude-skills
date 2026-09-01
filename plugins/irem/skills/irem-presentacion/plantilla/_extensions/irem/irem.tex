@@ -74,7 +74,10 @@
 %% --- Colores de Beamer -----------------------------------------------------
 \setbeamercolor{normal text}{fg=grisoscuro, bg=white}
 \setbeamercolor{structure}{fg=iremverde}
-\setbeamercolor{frametitle}{fg=iremazul, bg=white}
+%%  Sin fondo: si la caja del título lleva bg=white, pinta una banda blanca de
+%%  ancho completo sobre el fondo y borra el degradado gris en la parte de
+%%  arriba de cada lámina. Se nota al poner una lámina junto a otra del master.
+\setbeamercolor{frametitle}{fg=iremazul, bg=}
 \setbeamercolor{title}{fg=grisoscuro}
 \setbeamercolor{subtitle}{fg=grisoscuro}
 \setbeamercolor{itemize item}{fg=iremverde}
@@ -186,34 +189,25 @@
 %%  logotipo completo aquí o aparecerá esa palabra suelta.
 %%
 %%  Todo va en el pie y no en la cabecera: el pie se compone DESPUÉS del
-%%  título de lámina, cuya caja tiene fondo blanco y taparía lo que hubiera.
-%%  --- Franja inferior a sangre -------------------------------------------
-%%  Dos filetes al pie, azul encima de verde, de borde a borde.
+%%  título de lámina, así que nada de lo que se dibuje aquí queda por debajo.
+%%  --- Fondo de lámina ------------------------------------------------------
+%%  El fondo del master: blanco con un degradado gris muy tenue en las
+%%  esquinas y, al pie, la franja azul sobre verde a sangre.
 %%
-%%  Medida en ppt_resultados_IREM_2025_master_logos.PDF, no en el .pptx: el
-%%  .pptx no la trae en ninguna parte (ni en las láminas, ni en los layouts,
-%%  ni en el slide master), pero el PDF exportado del mismo deck sí, y en las
-%%  veinte láminas con el mismo valor al centésimo. Cuando los dos archivos
-%%  discrepan, manda el PDF, que es lo que la gente ve.
+%%  Va como imagen y no dibujado a mano porque en el master TAMPOCO es una
+%%  forma: es el relleno de fondo del slide master (`<p:bg>` con un blipFill),
+%%  que es justo el sitio donde no lo busca uno. Se buscó primero entre las
+%%  formas de las láminas y de los layouts, y ahí no está; de ahí salió la
+%%  conclusión equivocada de que el .pptx no la traía. Sí la trae.
 %%
-%%    tope de la franja  182.37 mm PPT → 86.16 mm
-%%    azul                 4.70 mm PPT →  2.22 mm
-%%    verde                3.43 mm PPT →  1.62 mm
+%%  Usar la imagen entera en vez de dos rectángulos tiene dos ventajas: sale
+%%  el degradado, que a mano no estaba, y la franja queda exacta sin depender
+%%  de dos longitudes calibradas. Medida en el asset: azul de 86.04 a 88.30 mm
+%%  y verde de 88.30 al borde.
 %%
-%%  Va en TODAS las láminas, portada incluida.
-\newlength{\iremFranjaAzul}\setlength{\iremFranjaAzul}{2.22mm}
-\newlength{\iremFranjaVerde}\setlength{\iremFranjaVerde}{1.62mm}
-\newcommand{\iremFranjaNodos}{%
-  \fill[iremazul]
-    ([shift={(0mm,\iremFranjaVerde)}]current page.south west) rectangle
-    ([shift={(0mm,\dimexpr\iremFranjaVerde+\iremFranjaAzul\relax)}]current page.south east);
-  \fill[iremverde]
-    (current page.south west) rectangle
-    ([shift={(0mm,\iremFranjaVerde)}]current page.south east);%
-}
-%%  Comando público, por si hace falta en una lámina `plain` suelta.
-\newcommand{\franjaPie}{%
-  \begin{tikzpicture}[remember picture, overlay]\iremFranjaNodos\end{tikzpicture}%
+%%  Pesa 23 KB porque es casi todo blanco.
+\setbeamertemplate{background canvas}{%
+  \includegraphics[width=\paperwidth, height=\paperheight]{fondo.png}%
 }
 
 \newcommand{\iremLogosNodos}{%
@@ -226,13 +220,13 @@
 }
 %%  Comando público para las láminas `plain`, que no llevan pie.
 \newcommand{\logosPie}{%
-  \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\iremFranjaNodos\end{tikzpicture}%
+  \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\end{tikzpicture}%
 }
 
 \setbeamertemplate{headline}{}
 \setbeamertemplate{footline}{%
   \ifnum\insertframenumber>1\relax
-    \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\iremFranjaNodos\end{tikzpicture}%
+    \begin{tikzpicture}[remember picture, overlay]\iremLogosNodos\end{tikzpicture}%
   \fi
 }
 %% Sin numeración de láminas, por decisión de formato.
@@ -334,7 +328,6 @@
     %% La portada también lleva franja: en el PDF del master está en las 20
     %% láminas sin excepción. El pie no se compone en la lámina 1, así que
     %% aquí se dibuja a mano.
-    \iremFranjaNodos
   \end{tikzpicture}%
 }
 
@@ -368,7 +361,6 @@
         at ([shift={(80mm,-34.82mm)}]current page.north west)
         {\bfseries\color{iremazul}\fontsize{21}{26}\selectfont #1};
       \iremLogosNodos
-      \iremFranjaNodos
     \end{tikzpicture}%
   \end{frame}
   \endgroup
@@ -465,7 +457,6 @@
        Iniciativa Regional para la Eliminación de la Malaria};
     %% El cierre es `plain` y no pasa por el pie, así que la franja se dibuja
     %% aquí a mano. Sin esto es la única lámina del deck que se queda sin ella.
-    \iremFranjaNodos
   \end{tikzpicture}%
 }
 

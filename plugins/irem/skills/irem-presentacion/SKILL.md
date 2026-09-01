@@ -597,19 +597,25 @@ Convertida del lienzo de PowerPoint (338,667 × 190,5 mm) al de Beamer
 | Cuerpo, primer renglón | y = 23,95 mm | margen 11,2 mm a cada lado |
 | Logotipo mesoamérica | (2,0 , 77,5) mm | 21,0 mm de ancho |
 | Logotipo BID | (146,9 , 78,5) mm | 9,8 mm de ancho |
-| Franja azul del pie | y = 86,16 mm | a sangre, 2,22 mm de alto |
-| Franja verde del pie | y = 88,38 mm | a sangre, 1,62 mm de alto |
+| Franja azul del pie | y = 86,04 mm | a sangre, 2,26 mm de alto |
+| Franja verde del pie | y = 88,30 mm | a sangre, 1,70 mm de alto |
 
 **Las láminas no llevan numeración**, por decisión de formato. No la agregues.
 
 **Este master no lleva chevron.** Si vienes de la plantilla anterior de IREM, ese
 elemento ya no existe.
 
-**La franja azul y verde del pie no está en el `.pptx`, pero sí en el PDF.** Se buscó en
-la lámina, en su layout, en el slide master y en los otros doce `.pptx` del equipo: en
-ninguno. En `ppt_resultados_IREM_2025_master_logos.pdf`, exportado del mismo deck, está
-en las veinte láminas con el mismo valor al centésimo. Cuando los dos archivos discrepan,
-**manda el PDF**, que es lo que la gente ve. Va en todas las láminas, portada incluida.
+**El fondo no es blanco.** Lleva un degradado gris muy tenue en las esquinas (baja a
+`#E6E6E6`) y, al pie, la franja azul sobre verde a sangre. Los dos vienen de una sola
+imagen, `fondo.png`, que es el fondo del master tal cual.
+
+Ese fondo es el relleno del slide master (`<p:bg>`), no una forma, y ahí es donde no lo
+busca uno: buscándolo entre las formas de las láminas y de los layouts no aparece, y de
+ahí sale la conclusión falsa de que el `.pptx` no lo trae. Sí lo trae. Si algún elemento
+del formato parece no existir, mira el `<p:bg>` del master antes de darlo por ausente.
+
+Consecuencia práctica: **ninguna caja puede llevar fondo blanco a lo ancho de la lámina**,
+o borra el degradado. Por eso el título de lámina va sin `bg`.
 
 **Los logotipos del pie van al revés que en las plantillas viejas**: mesoamérica
 MALARIA a la izquierda y grande, BID a la derecha y pequeño. El BID del pie va
@@ -670,6 +676,7 @@ En `_extensions/irem/logos/`:
 |---|---|
 | `logo-mesoamerica.png` | mesoamérica MALARIA; pie izquierdo y portada |
 | `logo-bid.png` | BID recortado, sin «Administrador»; pie derecho |
+| `fondo.png` | fondo de todas las láminas: degradado y franja azul y verde al pie |
 | `portada-foto.png` | fotografía de portada, ya recortada al encuadre del master |
 | `cintilla-donantes.png` | Carlos Slim, Fondo Mundial, BID, Gates; barra de la portada |
 | `cierre-logos.png` | BID y mesoamérica MALARIA; banda de la lámina de cierre |
@@ -693,7 +700,7 @@ Antes de entregar, revisa que se cumpla todo esto:
   propuesta a un externo, no: un comité no levanta la mano.
 - La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
-- Todas las láminas menos la portada llevan la franja azul y verde al pie.
+- Todas las láminas llevan el fondo del master: degradado en las esquinas y franja al pie.
 - La estructura va en los títulos, no en portadillas.
 - Ninguna lámina baja del 2% de tinta, y las que se acerquen no pasan del 15% del deck.
 - No hay dos láminas indistinguibles: el par título más primer renglón no se repite.

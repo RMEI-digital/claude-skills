@@ -166,6 +166,18 @@ def revisar_contenido(qmd):
 
 def revisar_formato(pdf):
     from PIL import Image
+
+    # El fondo del formato no es blanco: lleva un degradado gris tenue que baja
+    # hasta 227. Comparar contra blanco puro daría todas las láminas como
+    # llenas de tinta. Así que se compara contra el fondo mismo: es tinta lo
+    # que se aparta de él. Si no se encuentra el asset, se cae a un umbral
+    # tolerante, que es peor pero no rompe.
+    fondo = None
+    for base in (pdf.parent, pdf.parent.parent):
+        cand = base / "_extensions" / "irem" / "logos" / "fondo.png"
+        if cand.exists():
+            fondo = Image.open(cand).convert("RGB")
+            break
     carpeta = pdf.parent / ".revision"
     carpeta.mkdir(exist_ok=True)
     for viejo in carpeta.glob("rev-*.png"):
@@ -187,7 +199,15 @@ def revisar_formato(pdf):
         W, H = im.size
         px = im.load()
         mmy, mmx = 90.0 / H, 160.0 / W
-        bl = lambda p: all(v > 246 for v in p)
+        if fondo is not None:
+            fpx = fondo.resize((W, H), Image.BILINEAR).load()
+            bl = lambda p, x=0, y=0: True  # se redefine abajo con coordenadas
+            def bl(p, x=None, y=None, _f=fpx):
+                if x is None:
+                    return all(v > 225 for v in p)
+                return max(abs(p[i] - _f[x, y][i]) for i in range(3)) < 14
+        else:
+            bl = lambda p, x=None, y=None: all(v > 225 for v in p)
 
         # Cuánta tinta lleva de verdad la lámina. Es la única manera honesta de
         # detectar la lámina de una sola frase: contar portadillas y comandos
@@ -195,21 +215,20 @@ def revisar_formato(pdf):
         # sueltas que en pantalla también se lee como vacía. Se mide solo el
         # área de contenido, sin los logotipos ni la franja.
         y0, y1 = int(4 / mmy), int(74 / mmy)
-        blando = lambda p: all(v > 240 for v in p)
-        tinta = sum(1 for y in range(y0, y1) for x in range(W) if not blando(px[x, y]))
+        tinta = sum(1 for y in range(y0, y1) for x in range(W) if not bl(px[x, y], x, y))
         pct = 100.0 * tinta / ((y1 - y0) * W)
         if i > 1 and pct < TINTA_MINIMA:
             flacas.append((i, pct))
         if i == 1:
-            arriba = sum(1 for c in range(int(0.60 * W), W) if not bl(px[c, 0]))
-            der = sum(1 for y in range(0, int(0.93 * H)) if not bl(px[W - 1, y]))
+            arriba = sum(1 for c in range(int(0.60 * W), W) if not bl(px[c, 0], c, 0))
+            der = sum(1 for y in range(0, int(0.93 * H)) if not bl(px[W - 1, y], W - 1, y))
             if arriba < 50:
                 fallos.append(f"lámina 1: la foto no sangra por arriba")
             if der < 50:
                 fallos.append(f"lámina 1: la foto no sangra por la derecha")
             continue
         z = sum(1 for y in range(int(74.0 / mmy), int(77.0 / mmy))
-                for c in range(int(0.16 * W), int(0.88 * W)) if not bl(px[c, y]))
+                for c in range(int(0.16 * W), int(0.88 * W)) if not bl(px[c, y], c, y))
         if z > 60:
             fallos.append(f"lámina {i}: hay contenido en la banda de los logotipos")
         # Entre la base de los logotipos y la franja del pie no va nada. La
@@ -217,7 +236,7 @@ def revisar_formato(pdf):
         # la de en medio; si se mirara hasta el borde, la propia franja daría
         # positivo en todas las láminas.
         b = sum(1 for y in range(int(83.5 / mmy), int(85.8 / mmy))
-                for c in range(W) if not bl(px[c, y]))
+                for c in range(W) if not bl(px[c, y], c, y))
         if b > 60:
             fallos.append(f"lámina {i}: hay contenido pegado a la franja del pie")
         # Y la franja tiene que estar: azul sobre verde, de borde a borde.
@@ -230,11 +249,11 @@ def revisar_formato(pdf):
         # 150.5 y no 148.8: el recuadro \realce llega a 149.5 mm por diseño
         # del master, que le da margen derecho de 10.5 mm y no de 11.2.
         d = sum(1 for y in range(int(4.0 / mmy), int(74.0 / mmy))
-                for c in range(int(150.5 / mmx), W) if not bl(px[c, y]))
+                for c in range(int(150.5 / mmx), W) if not bl(px[c, y], c, y))
         if d > 40:
             fallos.append(f"lámina {i}: algo se sale por la derecha")
         iz = sum(1 for y in range(int(4.0 / mmy), int(74.0 / mmy))
-                 for c in range(0, int(9.5 / mmx)) if not bl(px[c, y]))
+                 for c in range(0, int(9.5 / mmx)) if not bl(px[c, y], c, y))
         if iz > 40:
             fallos.append(f"lámina {i}: algo se sale por la izquierda")
     return len(pngs), fallos

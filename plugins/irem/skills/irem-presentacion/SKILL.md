@@ -43,14 +43,15 @@ el `.qmd` hasta que el usuario apruebe el índice. Ahorra reescrituras completas
 Presupuesto de láminas para una charla **conducida por láminas**, a densidad
 intermedia:
 
-| Duración | Láminas | Portadillas |
-|---|---|---|
-| 10 min | 8–10 | 2 |
-| 20 min | 16–20 | 3 |
-| 30 min | 26–32 | 4–5 |
-| 45 min | 38–46 | 5–6 |
+| Duración | Láminas |
+|---|---|
+| 10 min | 8–10 |
+| 20 min | 16–20 |
+| 30 min | 26–32 |
+| 45 min | 38–46 |
 
-Cuenta las portadillas dentro del total: consumen segundos, no minutos.
+Son láminas de contenido. Por omisión no hay portadillas (ver abajo); si excepcionalmente
+pones alguna, súmala aparte.
 
 **Si la charla es conducida por demos, esta tabla no aplica: divídela más o menos a
 la mitad.** Un demo en vivo consume varios minutos sin consumir ni una lámina, y un
@@ -80,18 +81,20 @@ vacía. El tope es **15% del deck**.
 
 Dos reglas más, y las dos se verifican solas:
 
-- **Ninguna sección con menos de dos láminas de contenido lleva portadilla.** Es la misma
-  regla de siempre («si una sección tiene una sola lámina, no es sección»), pero ahora
-  importa el doble: cada portadilla es una lámina de una frase, y siete secciones son
-  siete láminas casi vacías. La sección puede seguir existiendo como argumento con su
-  nombre en el título de la lámina, sin `#` y por lo tanto sin divisoria.
+- **Por omisión no se usan portadillas: la estructura va en los títulos.** El nombre de la
+  sección es el título de la lámina y se repite en todas las de esa sección, calificado con
+  dos puntos cuando hace falta: «Los números: despliegues y reversiones», «Los números:
+  cuánto costó cada vuelta atrás». Vale igual para una charla interna que para una
+  propuesta. Medido sobre tres presentaciones reales, con una portadilla por sección
+  quedaba entre el 38 y el 40% de las láminas casi vacías; con la estructura en los
+  títulos, **cero**. Si aun así pones una portadilla, que su sección tenga cuatro láminas
+  o más.
 - **Como máximo una lámina de una sola afirmación por cada seis de contenido, y nunca dos
   seguidas.** La que sí se gana el lugar es la del final, la que repite el mensaje único.
   `\pregunta` no va en una propuesta a un externo: un comité no levanta la mano.
 
-Entre portadillas, láminas de despliegue y cierre, **no más de un tercio del total** debe
-llevar una frase o menos. Si te pasas, casi siempre es porque hay demasiadas secciones
-para el tamaño del deck, no porque sobren cifras.
+Si te pasas del tope, casi siempre es porque hay demasiadas secciones para el tamaño del
+deck, no porque sobren cifras.
 
 ### Si la presentación es una propuesta a un externo
 
@@ -374,8 +377,8 @@ python3 -c "import re; print(len(re.findall(rb'/DCTDecode', open('archivo.pdf','
 
 ## Elementos del formato
 
-Láminas normales en Markdown: `#` abre sección (genera portadilla automática), `##`
-abre lámina.
+Láminas normales en Markdown: `##` abre lámina. `#` abre sección y genera una portadilla,
+pero **por omisión no se usa**: la estructura va en los títulos de las láminas.
 
 Para láminas especiales, un encabezado vacío con clase `.plain` y el comando dentro
 de un bloque LaTeX crudo:
@@ -412,8 +415,9 @@ Las láminas `.plain` no llevan pie, así que tampoco logotipos. **La última l�
 la presentación sí debe llevarlos**: agrégale `\logosPie` dentro del mismo bloque
 LaTeX. `\laminaGracias` ya trae su propia banda de logotipos.
 
-Las portadillas de sección son automáticas: cada `#` genera una lámina blanca con el
-título centrado en azul. No las escribas a mano.
+Si decides usar una portadilla, es automática: cada `#` genera una lámina blanca con el
+título centrado en azul, y nunca se escribe a mano. Recuerda que cada una es una lámina
+con una sola frase, así que tiene que ganarse el lugar.
 
 Notas del presentador en láminas Markdown:
 
@@ -643,9 +647,14 @@ después de seleccionarla. Si añades un elemento nuevo a la portada, repite ese
 
 ### Listas
 
-**En este master el primer nivel no lleva viñeta.** El layout declara `buNone` en
-el nivel 1 y reserva solo una sangría de 6 mm. El punto aparece recién en el segundo
-nivel, y en gris oscuro, no en verde.
+**En este master el primer nivel no lleva viñeta ni sangría: va al ras del título.** El
+layout declara `buNone` y un `marL` de 12,7 mm, pero eso no es lo que se compone: en el PDF
+del master el cuerpo arranca en 26,4 mm y el título en 26,5, o sea alineados. Otra vez lo
+mismo, lo declarado no es lo aplicado; manda el render. El punto aparece recién en el
+segundo nivel, y en gris oscuro, no en verde.
+
+Las listas numeradas sí llevan 5 mm, porque el número necesita dónde ponerse. Con el
+margen en cero se salía de la lámina por la izquierda.
 
 Lo que separa un punto del siguiente es el aire, no el glifo. Si escribes puntos
 largos que se envuelven a dos y tres renglones, la lámina se lee como un párrafo
@@ -679,14 +688,14 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Ninguna lámina pasa de 40 palabras, salvo que sea una tabla.
 - Ninguna lista pasa de cuatro puntos, ni ningún punto de dos renglones.
 - Ningún título de lámina ocupa más de dos líneas.
-- Toda sección tiene su portadilla.
 - Toda lámina no obvia tiene nota del presentador.
-- Hay al menos un momento participativo cada diez minutos de exposición.
+- En una charla interna, hay al menos un momento participativo cada diez minutos. En una
+  propuesta a un externo, no: un comité no levanta la mano.
 - La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
 - Todas las láminas menos la portada llevan la franja azul y verde al pie.
-- Ninguna sección lleva portadilla con menos de dos láminas de contenido.
-- Las láminas de una frase (portadillas, despliegue y cierre) no pasan de un tercio.
+- La estructura va en los títulos, no en portadillas.
+- Ninguna lámina baja del 2% de tinta, y las que se acerquen no pasan del 15% del deck.
 - No hay dos láminas indistinguibles: el par título más primer renglón no se repite.
   Repetir solo el título es correcto y esperado.
 - No queda ningún marcador `[...]` sin resolver, ni en las láminas ni en las notas.
@@ -703,7 +712,8 @@ Si es una propuesta a un externo, además:
 - **Reducir la letra para que quepa.** Si no cabe, son dos láminas.
 - **Puntos con oraciones completas.** La oración completa va en las notas.
   En este formato duele el doble, porque el primer nivel no tiene viñeta.
-- **Portadillas sin propósito.** Si una sección tiene una sola lámina, no es sección.
+- **Poner una portadilla por sección.** Es lo que más vacía un deck. La estructura va en
+  los títulos; la portadilla es la excepción.
 - **Olvidar `\begin{numerados}`.** No da error, simplemente dibuja fuera de la lámina.
 - **Poner el subtítulo largo.** `subtitle` es la volanta de la barra verde, no un
   subtítulo: si es largo se encoge hasta volverse ilegible.

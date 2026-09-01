@@ -140,6 +140,13 @@
 \setlength{\leftmargini}{0mm}
 \setlength{\leftmarginii}{6.0mm}
 
+%%  Pero `enumerate` sí necesita sitio: con leftmargini en cero, el número
+%%  cuelga hacia la izquierda y se sale del margen de la lámina. Se le da su
+%%  propio margen justo antes de que el entorno monte la lista, que es el
+%%  único momento en que \leftmargini todavía se lee.
+\AtBeginEnvironment{enumerate}{\setlength{\leftmargini}{5mm}}
+\AtBeginEnvironment{itemize}{\setlength{\leftmargini}{0mm}}
+
 %%  El aire entre puntos hay que meterlo parcheando \itemize, no por plantilla.
 %%  Comprobado midiendo el PNG: con
 %%  \setbeamertemplate{itemize/enumerate body begin}{\setlength{\itemsep}{...}}

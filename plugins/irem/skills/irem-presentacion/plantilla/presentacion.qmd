@@ -8,9 +8,12 @@ lang: es
 format: irem-beamer
 ---
 
-# Primera sección
+<!-- La estructura va en los TÍTULOS, no en portadillas: el nombre de la sección se
+     repite y se califica con dos puntos. Si es una propuesta a un externo, los
+     nombres son los siete de la espina: La solicitud, Lo que sabemos, Lo que vemos,
+     Lo que consideramos, Lo que buscamos, Lo que proponemos, Siguientes pasos. -->
 
-## Una idea por lámina
+## Primera sección: una idea por lámina
 
 - Frases cortas, no párrafos
 - Tres o cuatro puntos como máximo
@@ -21,7 +24,7 @@ Nota del presentador: aquí explico por qué menos texto obliga a la audiencia a
 escucharme en vez de leer la pantalla.
 :::
 
-## Objetivos
+## Primera sección: los objetivos
 
 ```{=latex}
 \begin{numerados}
@@ -31,16 +34,10 @@ escucharme en vez de leer la pantalla.
 \end{numerados}
 
 \realce{El matiz que no cabe en los numerales}
+\note{Aquí va lo que digo yo, que no es lo que se proyecta.}
 ```
 
-## {.plain}
-
-```{=latex}
-\ideaGrande{La afirmación que quiero que recuerden}
-\note{Esta lámina se queda en silencio tres segundos antes de que yo hable.}
-```
-
-## Resultados de la medición
+## Primera sección: los resultados
 
 ```{=latex}
 \begin{center}
@@ -53,9 +50,10 @@ Tercer componente  & 37,5\% & \celdaCalor{bajo}{37,5\%} \\
 \end{center}
 
 \notaPie{N: establecimientos en la muestra. El denominador varía según el criterio.}
+\note{Dejo que miren la tabla unos segundos antes de hablar.}
 ```
 
-## Lámina con dos columnas
+## Segunda sección: antes y después
 
 :::: {.columns}
 ::: {.column width="50%"}
@@ -70,14 +68,11 @@ Lo que proponemos
 :::
 ::::
 
-## {.plain}
+::: {.notes}
+El contraste es el argumento: lo digo señalando la columna de la derecha.
+:::
 
-```{=latex}
-\cifra{41\%}{de los focos residuales quedaron sin intervención}
-\logosPie
-```
-
-## Los términos del día a día
+## Segunda sección: los términos del día a día
 
 ```{=latex}
 \vspace{1mm}
@@ -87,19 +82,10 @@ Lo que proponemos
 \vspace{4mm}
 \concepto{Tercer término}{Su explicación en una frase}\hfill
 \concepto{Cuarto término}{Su explicación en una frase}
+\note{Estos cuatro los repito a lo largo de la presentación, a propósito.}
 ```
 
-## {.plain}
-
-```{=latex}
-\pregunta{¿A quién le ha pasado esto alguna vez?}
-\note{Espero manos arriba. Si nadie responde, cuento mi propio caso primero.}
-\logosPie
-```
-
-# Segunda sección
-
-## Cierre
+## Segunda sección: lo que nos llevamos
 
 Tres ideas para llevarse:
 

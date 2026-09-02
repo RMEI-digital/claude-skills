@@ -3,8 +3,8 @@
 Skills de Claude Code del equipo de **RMEI-digital**, instalables como plugin.
 
 Una *skill* es un conjunto de instrucciones que Claude carga solo cuando hacen falta. Sirve
-para que un procedimiento que alguien repite —armar una presentación con el formato
-institucional, crear un repositorio como toca— quede escrito una vez y lo pueda usar todo el
+para que un procedimiento que alguien repite (armar una presentación con el formato
+institucional, crear un repositorio como toca) quede escrito una vez y lo pueda usar todo el
 equipo, en lugar de vivir en la cabeza de una persona.
 
 ## Instalar
@@ -75,13 +75,19 @@ sigue siendo tuyo.
 ### `/irem-security-audit`
 
 Auditoría de seguridad de un repositorio, código e historial de git. Corre TruffleHog para
-buscar secretos vivos en **todo** el historial, Bandit y Semgrep para análisis estático, y
-—esto es lo que la distingue— una revisión manual de **controles ausentes**: autenticación,
-validación de firma, límites de tasa.
+buscar secretos vivos en **todo** el historial y en los archivos sin versionar, Bandit y Semgrep
+para análisis estático, `pip-audit` para dependencias con vulnerabilidades conocidas, VVAH como
+paso opcional, y (esto es lo que la distingue) una revisión manual de **controles ausentes**:
+autenticación, validación de firma, límites de tasa.
 
 Esa distinción es la razón de ser de la skill: el análisis automático encuentra lo que está
 mal escrito, no lo que falta. Un endpoint sin autenticación no es código defectuoso, es
 código que no existe, y ninguna herramienta lo señala sola.
+
+Dos reglas suyas que vale la pena conocer antes de usarla: el JSON crudo de TruffleHog **nunca**
+se escribe dentro del repo auditado, porque trae los secretos en claro; y no se filtra por tipo de
+resultado, porque `unverified` no significa falso positivo sino "no hay forma de comprobarlo desde
+aquí", que es el caso de una clave privada en el historial.
 
 Pensada para repos pequeños de salud pública y datos personales, tipo Flask, Django o Node
 sobre Heroku o Vercel. Entrega `SECURITY-REVIEW.md` y un resumen ejecutivo aparte.
@@ -94,7 +100,7 @@ equipo se queda con la copia vieja **sin ningún aviso**.
 
 Al publicar cualquier cambio:
 
-1. Sube `version` en `plugin.json` — parche para correcciones, menor para algo nuevo.
+1. Sube `version` en `plugin.json`: parche para correcciones, menor para algo nuevo.
 2. `claude plugin validate .` debe pasar sin advertencias.
 3. Commit y push.
 4. Avisa al equipo que corra `/plugin update irem`.

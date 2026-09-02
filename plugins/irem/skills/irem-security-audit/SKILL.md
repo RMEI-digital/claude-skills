@@ -13,7 +13,7 @@ para repos pequeños de salud pública / datos personales.
 
 Esta skill son instrucciones que orquestan **herramientas externas**. Antes de correrla, esas
 herramientas deben estar instaladas en la máquina. Si al iniciar falta alguna, instálala (o
-avisa al usuario) antes de seguir; si una no se puede instalar, sáltala y dilo en el reporte —
+avisa al usuario) antes de seguir; si una no se puede instalar, sáltala y dilo en el reporte:
 no bloquees toda la auditoría por una herramienta.
 
 | Herramienta | Para qué | Instalación |
@@ -21,6 +21,7 @@ no bloquees toda la auditoría por una herramienta.
 | **TruffleHog** | Secretos vivos en todo el historial de git | `brew install trufflehog` (macOS) · o binario desde github.com/trufflesecurity/trufflehog |
 | **Bandit** | SAST para Python | `uv tool install bandit` |
 | **Semgrep** | SAST con rulesets Flask/OWASP/secrets | `uv tool install semgrep` |
+| **pip-audit** | Dependencias de Python con vulnerabilidades conocidas | `uv tool install pip-audit` |
 | **VVAH** (`vvaharness`) | SAST agéntico (encadena hallazgos). **Opcional**: es el paso más lento y gasta API | `uv tool install vvaharness` |
 | **uv** | Gestor para instalar/correr las de arriba | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **git** | Historial y ramas | ya viene con el sistema / Xcode CLT |
@@ -28,7 +29,7 @@ no bloquees toda la auditoría por una herramienta.
 Comprobación rápida de qué está instalado (correr al empezar):
 
 ```bash
-for t in trufflehog bandit semgrep uv git; do
+for t in trufflehog bandit semgrep pip-audit uv git; do
   command -v "$t" >/dev/null 2>&1 && printf "%-12s ✓\n" "$t" || printf "%-12s ✗ FALTA\n" "$t"
 done
 uv tool list 2>/dev/null | grep -i vva || echo "vvaharness ✗ falta (opcional, ver Paso 3)"
@@ -40,6 +41,7 @@ Instalar todo de una vez (macOS con Homebrew + uv):
 brew install trufflehog
 uv tool install bandit
 uv tool install semgrep
+uv tool install pip-audit
 uv tool install vvaharness   # opcional, solo si vas a correr el Paso 3
 ```
 
@@ -55,12 +57,16 @@ porque las vulnerabilidades eran *controles faltantes*: endpoint sin autenticaci
 validación de firma, sin rate limiting. Por eso **la revisión manual y TruffleHog pesan más que el
 SAST automático**. Nunca declares el repo "limpio" solo porque Bandit/Semgrep no encontraron nada.
 
-## Antes de empezar — preguntar SIEMPRE
+## Antes de empezar
 
-1. **Regla de commits del repo.** Muchos de estos repos tienen `CLAUDE.md` con "nunca commitear ni
-   pushear". Respétalo. Deja todo en el working tree. Si no hay regla, igual **no commitees** los
-   entregables ni los scripts de apoyo sin confirmación explícita.
-2. **¿Hay acceso en vivo?** (DB, Heroku/Vercel, credenciales). Determina si puedes *verificar*
+Primero **lee**, y solo pregunta lo que no puedas averiguar leyendo. La regla de commits suele estar
+en el `CLAUDE.md` del repo, y el stack en el `README` y el `Procfile`: preguntar eso gasta el turno
+del usuario en algo que el repo ya dice. En cualquier caso, y aunque no haya regla escrita, **no
+commitees** los entregables ni los scripts de apoyo sin confirmación explícita.
+
+Lo que sí hay que preguntar, todo junto en una sola tanda porque cambia el trabajo:
+
+1. **¿Hay acceso en vivo?** (DB, Heroku/Vercel, credenciales). Determina si puedes *verificar*
    hallazgos con ejemplos reales o si es solo revisión estática.
    - Si NO hay acceso o el usuario no está seguro → empieza con código + historial y avisa qué
      acceso haría falta para probar cada hallazgo.
@@ -71,15 +77,15 @@ SAST automático**. Nunca declares el repo "limpio" solo porque Bandit/Semgrep n
    y 4 son los que sostienen la auditoría. Pregúntalo en la misma tanda que lo anterior y, si el
    usuario no lo pide explícitamente, **sáltalo** y anótalo en el alcance del reporte.
 
-## Paso 0 — Reconocimiento
+## Paso 0: reconocimiento
 
 - Lee `README`, `Procfile`, `requirements.txt`/`package.json`, `runtime.txt`, y los archivos de
   entrada (`app.py`, `main.py`, `index.js`, rutas). Entiende: framework, qué endpoints expone,
   dónde está la DB, qué webhooks recibe, qué datos guarda.
-- `git log --oneline --all | wc -l` y `git branch -a` — cuántos commits y ramas hay. El historial
+- `git log --oneline --all | wc -l` y `git branch -a`: cuántos commits y ramas hay. El historial
   y **todas las ramas** entran en el alcance (los secretos filtrados en ramas viejas siguen vivos).
 
-## Paso 1 — Secretos en TODO el historial (lo más importante)
+## Paso 1: secretos en TODO el historial (lo más importante)
 
 TruffleHog escanea cada commit de cada rama y **se autentica de verdad** contra el servicio, sin que
 haya que pedirlo: `verified=true` significa que la credencial SIGUE VIVA y es CRITICO.
@@ -143,7 +149,7 @@ crudos se quedan fuera del repo, por la misma razon.
 
 - Para cada hallazgo `verified=true`: es CRÍTICO. La corrección es **rotar la credencial**
   (`heroku pg:credentials:rotate`, regenerar secreto de Azure/OAuth, etc.), no solo borrarla del
-  código — ya está en el historial para siempre.
+  código, porque ya está en el historial para siempre.
 - **NUNCA escribas el valor del secreto en ningun archivo que quede dentro del repo**, ni en los
   `.md`, ni en los `.txt`, ni en el JSON de la herramienta. Escribirlo reproduce el mismo defecto que
   estas reportando, y el JSON es donde de verdad se filtra: el campo `Raw` trae el secreto completo
@@ -154,21 +160,85 @@ crudos se quedan fuera del repo, por la misma razon.
   proyecto). Sin eso, un `git add -A` distraido del usuario commitea las salidas de la auditoria.
 - Revisa también las **puntas de ramas** (`heroku/testing`, etc.): secretos en texto plano ahí.
 
-## Paso 2 — SAST estático (Bandit + Semgrep)
+## Paso 2: SAST estático (Bandit + Semgrep)
 
 ```bash
 # Python:
-bandit -r . -x ./.venv,./venv,./node_modules -f txt -o security-review/bandit.txt 2>/dev/null || true
+bandit -r . -x ./.venv,./venv,./node_modules,./security-review -f txt \
+  -o security-review/bandit.txt 2>security-review/bandit.stderr.txt
+echo "bandit exit=$?"   # 1 = encontro hallazgos (normal). 2 = fallo de verdad
+
 semgrep --config p/flask --config p/python --config p/owasp-top-ten --config p/secrets \
-  --exclude .venv --exclude node_modules . > security-review/semgrep.txt 2>&1 || true
+  --exclude .venv --exclude node_modules --exclude security-review --metrics=off . \
+  > security-review/semgrep.txt 2>security-review/semgrep.stderr.txt
+echo "semgrep exit=$?"
+
 # Node/JS: usa --config p/javascript --config p/nodejs --config p/owasp-top-ten
 ```
 
-Si Semgrep da 0 hallazgos, **anótalo explícitamente como resultado negativo con sentido**, no como
-"todo bien" (ver Regla de oro). Escribe en `security-review/semgrep.txt` qué hallazgos manuales
-(controles ausentes) NO puede ver el SAST.
+**Nunca uses `2>/dev/null || true` aquí.** Si la herramienta no esta instalada o revienta, ese patron
+deja un archivo vacio y el reporte acaba diciendo "0 hallazgos", que es exactamente lo contrario de
+lo que paso. Comprueba siempre que el artefacto existe y no esta vacio:
 
-## Paso 3 (OPCIONAL) — SAST agéntico (VVAH / vvaharness)
+```bash
+for f in security-review/bandit.txt security-review/semgrep.txt; do
+  [ -s "$f" ] && printf "%-32s ✓ %s bytes\n" "$f" "$(wc -c <"$f")" \
+              || printf "%-32s ✗ VACIO O AUSENTE: la herramienta fallo\n" "$f"
+done
+```
+
+Si Semgrep da 0 hallazgos, **anotalo explicitamente como resultado negativo con sentido**, no como
+"todo bien" (ver Regla de oro). Ese analisis va en el `.md` del reporte, **no dentro de
+`semgrep.txt`**: los crudos se quedan como los escribio la herramienta, para que se puedan comparar
+con la corrida siguiente.
+
+## Paso 2.5: dependencias con vulnerabilidades conocidas
+
+Ni Bandit ni Semgrep miran esto, y en un repo de salud sobre Heroku suele ser el hallazgo con mas
+CVEs detras. Es rapido y no se puede omitir.
+
+```bash
+# Python, sobre el entorno instalado:
+pip-audit 2>&1 | tee security-review/pip-audit.txt
+
+# Node:
+npm audit --omit=dev 2>&1 | tee security-review/npm-audit.txt
+```
+
+**Audita lo que corre en produccion, no lo que tienes instalado.** Si el `requirements.txt` del
+working tree ya subio versiones que aun no estan desplegadas, `pip-audit` da 0 y el reporte miente.
+Compara contra el fijado en el commit desplegado:
+
+```bash
+git show HEAD:requirements.txt > /tmp/req-produccion.txt
+pip-audit -r /tmp/req-produccion.txt
+```
+
+Si `pip-audit -r` falla creando su venv temporal (pasa en entornos restringidos), la alternativa es
+consultar OSV directamente con las versiones fijadas, que no necesita instalar nada:
+
+```bash
+python3 - <<'FIN'
+import json, re, urllib.request
+pkgs = []
+for linea in open("/tmp/req-produccion.txt"):
+    m = re.match(r"^([A-Za-z0-9_.\-]+)==([^\s;#]+)", linea.split("#")[0].strip())
+    if m: pkgs.append((m.group(1), m.group(2)))
+q = {"queries": [{"package": {"name": n, "ecosystem": "PyPI"}, "version": v} for n, v in pkgs]}
+req = urllib.request.Request("https://api.osv.dev/v1/querybatch",
+                             data=json.dumps(q).encode(),
+                             headers={"Content-Type": "application/json"})
+res = json.load(urllib.request.urlopen(req, timeout=60))
+for (n, v), r in zip(pkgs, res.get("results", [])):
+    ids = [x["id"] for x in r.get("vulns", [])]
+    if ids: print(f"{n}=={v}  {len(ids)} avisos: {', '.join(ids[:5])}")
+FIN
+```
+
+Nota al escribir el reporte: OSV devuelve un id por aviso y un mismo fallo suele tener GHSA y PYSEC a
+la vez, asi que ese numero **no es comparable** con el de `pip-audit`. Di cual usaste.
+
+## Paso 3 (OPCIONAL): SAST agéntico (VVAH / vvaharness)
 
 VVAH modela amenazas y **encadena** hallazgos (encontró el takeover por SharePoint y la inyección
 de fórmulas Excel que ningún otro tool vio). A cambio es **el paso más lento de toda la auditoría y
@@ -207,7 +277,7 @@ usuario para que lo borre o lo ignore cuando termine.
 Si VVAH no está instalado: `uv tool install vvaharness`. Si falla o no aplica al stack, sáltalo y
 dilo en el reporte, no bloquees la auditoría por esto.
 
-## Paso 4 — Revisión manual de CONTROLES AUSENTES (la que más encuentra)
+## Paso 4: revisión manual de CONTROLES AUSENTES (la que más encuentra)
 
 Lee el código buscando lo que *falta*. Checklist:
 
@@ -226,7 +296,22 @@ Lee el código buscando lo que *falta*. Checklist:
 - **Inyección de fórmulas** en exports a Excel/CSV (`=`, `+`, `@` al inicio de celda → RCE en la
   máquina de quien lo abre).
 
-## Paso 5 — Pruebas seguras (solo si hay acceso en vivo y el usuario lo pide)
+## Paso 5: pruebas seguras (solo si hay acceso en vivo y el usuario lo pide)
+
+**Probar el sistema encuentra cosas que leer el código no encuentra nunca.** En una auditoría de
+septiembre de 2026, escribirle al bot desde un teléfono real destapó que WhatsApp había empezado a
+permitir ocultar el número (los usernames y los BSUID de Meta): los usuarios que lo activaban dejaban
+de ser reconocidos y sus reportes se perdían en silencio. Ninguna herramienta ni revisión de código
+podía verlo, porque el defecto solo existe frente a la plataforma real. Si el sistema habla con un
+servicio externo (WhatsApp, Twilio, Graph, un banco), **usa el sistema como lo usa un usuario**, no
+solo leas su código.
+
+Dos trampas de método de esa misma auditoría, por si ahorran horas:
+
+- Un `heroku config:get VARIABLE` vacío **no prueba** que la variable no exista: el buildpack puede
+  fijarla al arrancar el dyno. Compruébalo en el log de arranque, no en la config.
+- Lo que un `.gitignore` esconde puede ser justo lo que el despliegue necesita. Antes de dar por
+  hecho que un archivo nuevo viaja al servidor, `git check-ignore -v` sobre él.
 
 El usuario suele querer un **ejemplo real** para convencer a su equipo. Reglas:
 
@@ -242,14 +327,14 @@ El usuario suele querer un **ejemplo real** para convencer a su equipo. Reglas:
 
 ## Entregables (siempre, salvo que pidan otra cosa)
 
-1. **`SECURITY-REVIEW.md`** — reporte completo. Encabezado con: fecha, alcance (archivos + nº de
+1. **`SECURITY-REVIEW.md`**: reporte completo. Encabezado con: fecha, alcance (archivos + nº de
    commits + ramas), sistema/stack, y **la base de las líneas citadas** (qué commit = producción).
    Tabla de hallazgos con severidad (🔴 CRÍTICO / 🟠 ALTO / 🟡 MEDIO / 🔵 BAJO), id (F-1, F-2…),
    ubicación `archivo:línea`, estado (abierto / corregido local no desplegado / etc.), y corrección.
    Cada hallazgo: qué es, prueba/evidencia, impacto, fix concreto.
-2. **`SECURITY-REVIEW-RESUMEN.md`** — versión corta en español: "lo urgente en una frase", tabla de
+2. **`SECURITY-REVIEW-RESUMEN.md`**: versión corta en español: "lo urgente en una frase", tabla de
    "acciones para hoy" con comandos, y una tabla de todos los hallazgos. Pensada para el equipo.
-3. **`security-review/`** — salidas crudas: `trufflehog-NOTA.txt` (el resumen sin valores, con el
+3. **`security-review/`**: salidas crudas: `trufflehog-NOTA.txt` (el resumen sin valores, con el
    historial y el working tree), los `.stderr.txt` (que prueban el alcance real de cada escaneo),
    `bandit.txt`, `semgrep.txt`, y
    `vvah/` solo si se corrió el Paso 3. **El JSON crudo de TruffleHog se queda fuera del repo**, en el
@@ -259,7 +344,7 @@ El usuario suele querer un **ejemplo real** para convencer a su equipo. Reglas:
 ## Convenciones de escritura del reporte
 
 - Español para el resumen (el equipo lo lee). El detalle puede ser bilingüe.
-- Distingue **producción vs local**: si un fix existe solo en el working tree sin commit/deploy, el
+- Distingue **producción vs local**: si un fix existe solo en el working tree sin commit ni deploy, el
   reporte debe decir claramente "producción sigue vulnerable". (Verifica con `git log` que el fix
   no esté en `HEAD` ni en la rama de deploy.)
 - Aclara el **alcance de datos** con honestidad: si NO hay registros por-paciente, dilo (tranquiliza);

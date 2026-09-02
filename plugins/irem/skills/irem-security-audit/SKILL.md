@@ -81,21 +81,77 @@ SAST automático**. Nunca declares el repo "limpio" solo porque Bandit/Semgrep n
 
 ## Paso 1 — Secretos en TODO el historial (lo más importante)
 
-TruffleHog escanea cada commit de cada rama y, con `--results=verified`, **se autentica de verdad**
-contra el servicio: `verified=true` significa que la credencial SIGUE VIVA.
+TruffleHog escanea cada commit de cada rama y **se autentica de verdad** contra el servicio, sin que
+haya que pedirlo: `verified=true` significa que la credencial SIGUE VIVA y es CRITICO.
+
+`unverified` **no significa falso positivo**: significa que no existe forma de comprobarlo desde
+aqui. Es el caso de una clave privada, de una URL de Postgres o de un token interno. Por eso **no se
+filtra por tipo de resultado**: con `--results=verified` una clave RSA privada en el historial da
+cero hallazgos (comprobado en un repo de prueba: 0 con ese filtro, 2 con el set por defecto).
 
 ```bash
 mkdir -p security-review
-trufflehog git file://. --results=verified,unknown --json > security-review/trufflehog.json 2>/dev/null
-# resumen legible (sin volcar los secretos en texto plano):
-trufflehog git file://. --results=verified,unknown 2>/dev/null | grep -Ei 'Detector|Verified|File|Line|Commit' 
+
+# El JSON crudo NUNCA se guarda dentro del repo auditado: su campo "Raw" trae el
+# valor completo del secreto, y escribirlo ahi reproduce el defecto que buscas.
+CRUDO="$(mktemp -d)/trufflehog.json"
+
+# Sin --results: el default de trufflehog ya es verified,unverified,unknown.
+trufflehog git file://. --json --no-update > "$CRUDO" 2> security-review/trufflehog.stderr.txt
+echo "exit=$?"   # un fallo NO es un repo limpio: si no es 0, para y averigua por que
+grep -c 'finished scanning' security-review/trufflehog.stderr.txt   # confirma que escaneo algo
 ```
+
+El resumen legible se hace **seleccionando campos**, nunca filtrando lineas. Este script imprime
+detector, estado, archivo, linea y commit, y no toca `Raw` en ningun caso:
+
+```bash
+python3 - "$CRUDO" <<'FIN' | tee security-review/trufflehog-NOTA.txt
+import json, sys
+filas = []
+for linea in open(sys.argv[1]):
+    try: d = json.loads(linea)
+    except ValueError: continue
+    if "DetectorName" not in d: continue
+    g = d.get("SourceMetadata", {}).get("Data", {}).get("Git", {})
+    filas.append((d["DetectorName"], bool(d.get("Verified")),
+                  g.get("file"), g.get("line"), (g.get("commit") or "")[:8]))
+print("hallazgos:", len(filas), "| verificados vivos:", sum(1 for f in filas if f[1]))
+for f in sorted(filas):
+    print(f"  {f[0]:<28} verified={f[1]}  {f[2]}:{f[3]}  commit {f[4]}")
+FIN
+```
+
+Un `grep` de palabras clave sobre la salida legible **no sirve como redaccion**: es una lista blanca
+aplicada a lineas enteras, asi que cualquier linea de secreto que contenga "file" o "line" se cuela,
+y los secretos multilinea se cortan de forma impredecible.
+
+Escanea tambien el **working tree**, no solo el historial. El escaneo de git ve unicamente lo
+comiteado, asi que un `.env` o un `.pem` sin versionar, con credenciales vivas en la maquina de quien
+despliega, seria invisible:
+
+```bash
+printf '\\.venv/\n\\.git/\nsecurity-review/\n__pycache__/\n' > "$(dirname "$CRUDO")/excluir.txt"
+trufflehog filesystem . -x "$(dirname "$CRUDO")/excluir.txt" --json --no-update \
+  > "${CRUDO%.json}-fs.json" 2> security-review/trufflehog-fs.stderr.txt
+echo "exit=$?"
+```
+
+El resumen se saca con el mismo script de arriba, cambiando el argumento por
+`"${CRUDO%.json}-fs.json"` y leyendo `SourceMetadata.Data.Filesystem` en vez de `.Git`. Los dos
+crudos se quedan fuera del repo, por la misma razon.
 
 - Para cada hallazgo `verified=true`: es CRÍTICO. La corrección es **rotar la credencial**
   (`heroku pg:credentials:rotate`, regenerar secreto de Azure/OAuth, etc.), no solo borrarla del
   código — ya está en el historial para siempre.
-- **NUNCA escribas el valor del secreto en los .md ni en `security-review/*.txt`.** Escribirlo
-  reproduce el mismo defecto que estás reportando. Referencia commit + archivo + línea.
+- **NUNCA escribas el valor del secreto en ningun archivo que quede dentro del repo**, ni en los
+  `.md`, ni en los `.txt`, ni en el JSON de la herramienta. Escribirlo reproduce el mismo defecto que
+  estas reportando, y el JSON es donde de verdad se filtra: el campo `Raw` trae el secreto completo
+  (una clave RSA aparece integra, 1675 caracteres). El crudo va a un directorio temporal fuera del
+  repo; dentro solo entra el resumen sin valores. Referencia commit + archivo + linea.
+- **Protege los entregables antes de generarlos.** En el repo auditado, mete `security-review/` y los
+  `.md` del informe en `.git/info/exclude` (no en `.gitignore`, que es un archivo versionado del
+  proyecto). Sin eso, un `git add -A` distraido del usuario commitea las salidas de la auditoria.
 - Revisa también las **puntas de ramas** (`heroku/testing`, etc.): secretos en texto plano ahí.
 
 ## Paso 2 — SAST estático (Bandit + Semgrep)
@@ -193,9 +249,12 @@ El usuario suele querer un **ejemplo real** para convencer a su equipo. Reglas:
    Cada hallazgo: qué es, prueba/evidencia, impacto, fix concreto.
 2. **`SECURITY-REVIEW-RESUMEN.md`** — versión corta en español: "lo urgente en una frase", tabla de
    "acciones para hoy" con comandos, y una tabla de todos los hallazgos. Pensada para el equipo.
-3. **`security-review/`** — salidas crudas: `trufflehog.json`, `bandit.txt`, `semgrep.txt`, y
-   `vvah/` solo si se corrió el Paso 3. En los .txt de secretos, **omitir los valores** y decir por
-   qué. Si el Paso 3 se saltó, el reporte debe decirlo en el alcance, no dejarlo en silencio.
+3. **`security-review/`** — salidas crudas: `trufflehog-NOTA.txt` (el resumen sin valores, con el
+   historial y el working tree), los `.stderr.txt` (que prueban el alcance real de cada escaneo),
+   `bandit.txt`, `semgrep.txt`, y
+   `vvah/` solo si se corrió el Paso 3. **El JSON crudo de TruffleHog se queda fuera del repo**, en el
+   temporal: contiene los secretos en claro. Dilo en la nota, para que se sepa que no se omitió por
+   descuido. Si el Paso 3 se saltó, el reporte debe decirlo en el alcance, no dejarlo en silencio.
 
 ## Convenciones de escritura del reporte
 

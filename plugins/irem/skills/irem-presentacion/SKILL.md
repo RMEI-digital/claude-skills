@@ -44,7 +44,7 @@ se hace es escribir dos versiones del contenido.
 
 ## Cómo trabajar
 
-### 1. Antes de escribir nada, consigue tres cosas
+### 1. Antes de escribir nada, consigue dos cosas
 
 Si el usuario no las dio, pregúntalas en un solo mensaje:
 
@@ -53,9 +53,8 @@ Si el usuario no las dio, pregúntalas en un solo mensaje:
   contraparte de gobierno): si es externa, la estructura no la inventas, está fija: la
   trae completa el apartado «Si la presentación es una propuesta a un externo».
 - **Duración**: define el número de láminas (ver presupuesto abajo).
-- **El mensaje único**: la frase que la audiencia debe recordar si olvida todo lo demás.
 
-Y una cuarta, que no es de contenido pero cambia lo que entregas: **si hace falta el
+Y una tercera, que no es de contenido pero cambia lo que entregas: **si hace falta el
 PowerPoint editable o basta el PDF.** Ver «Dos salidas, una sola fuente» arriba.
 
 Si el usuario trae material de origen (informe, notas, datos), léelo antes de
@@ -117,8 +116,9 @@ Dos reglas más, y las dos se verifican solas:
   títulos, **cero**. Si aun así pones una portadilla, que su sección tenga cuatro láminas
   o más.
 - **Como máximo una lámina de una sola afirmación por cada seis de contenido, y nunca dos
-  seguidas.** La que sí se gana el lugar es la del final, la que repite el mensaje único.
-  `\pregunta` no va en una propuesta a un externo: un comité no levanta la mano.
+  seguidas.** La que sí se gana el lugar es la del final, la que deja la idea con la que
+  quieres que se queden. `\pregunta` no va en una propuesta a un externo: un comité no
+  levanta la mano.
 
 Si te pasas del tope, casi siempre es porque hay demasiadas secciones para el tamaño del
 deck, no porque sobren cifras.
@@ -861,7 +861,6 @@ Antes de entregar, revisa que se cumpla todo esto:
 - Toda lámina no obvia tiene nota del presentador.
 - En una charla interna, hay al menos un momento participativo cada diez minutos. En una
   propuesta a un externo, no: un comité no levanta la mano.
-- La última lámina repite el mensaje único.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
 - Todas las láminas llevan el fondo del master: degradado en las esquinas y franja al pie.
 - La estructura va en los títulos, no en portadillas.

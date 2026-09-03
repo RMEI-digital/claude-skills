@@ -22,7 +22,7 @@ no bloquees toda la auditoría por una herramienta.
 | **Bandit** | SAST para Python | `uv tool install bandit` |
 | **Semgrep** | SAST con rulesets Flask/OWASP/secrets | `uv tool install semgrep` |
 | **pip-audit** | Dependencias de Python con vulnerabilidades conocidas | `uv tool install pip-audit` |
-| **VVAH** (`vvaharness`) | SAST agéntico (encadena hallazgos). **Opcional**: es el paso más lento y gasta API | `uv tool install vvaharness` |
+| **VVAH** (`vvaharness`) | SAST agéntico (encadena hallazgos). **Opcional**: es el paso más lento y el que más tokens consume | `uv tool install vvaharness` |
 | **uv** | Gestor para instalar/correr las de arriba | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **git** | Historial y ramas | ya viene con el sistema / Xcode CLT |
 
@@ -73,7 +73,7 @@ Lo que sí hay que preguntar, todo junto en una sola tanda porque cambia el trab
    - Si SÍ hay acceso → puedes hacer pruebas, pero lee la sección "Pruebas seguras" abajo.
 3. **Contexto del dominio.** ¿Qué datos maneja? (PII, datos de salud, GPS). Esto define la gravedad
    real y las implicaciones legales (p. ej. Ley 172-13 en RD para datos de salud).
-4. **¿Corremos VVAH (Paso 3)?** Es opcional: tarda bastante y consume API de pago. Los Pasos 1, 2
+4. **¿Corremos VVAH (Paso 3)?** Es opcional: tarda bastante y consume bastantes tokens. Los Pasos 1, 2
    y 4 son los que sostienen la auditoría. Pregúntalo en la misma tanda que lo anterior y, si el
    usuario no lo pide explícitamente, **sáltalo** y anótalo en el alcance del reporte.
 
@@ -242,8 +242,14 @@ la vez, asi que ese numero **no es comparable** con el de `pip-audit`. Di cual u
 
 VVAH modela amenazas y **encadena** hallazgos (encontró el takeover por SharePoint y la inyección
 de fórmulas Excel que ningún otro tool vio). A cambio es **el paso más lento de toda la auditoría y
-gasta API de pago** (Anthropic SDK o CLI), así que **no se corre por defecto**: solo si el usuario
-lo pidió en la pregunta 4 de "Antes de empezar". Sin este paso la auditoría sigue siendo válida:
+el que más tokens consume**, así que **no se corre por defecto**: solo si el usuario lo pidió en la
+pregunta 4 de "Antes de empezar".
+
+Dónde se paga ese consumo depende del backend, y conviene decírselo bien al usuario en vez de
+hablar de «API de pago» a secas: con el SDK de Anthropic va contra una clave de API, que se
+factura por token; con el backend CLI va contra el uso del plan de Claude que la persona ya
+tiene. En el segundo caso no hay factura nueva, pero el gasto existe igual y el paso puede
+tardar. Sin este paso la auditoría sigue siendo válida:
 dilo en el alcance del reporte ("Paso 3 no ejecutado a pedido del usuario") y sigue.
 
 > ⚠️ **Nunca corras `vvaharness scan` sin `--stop-after s9`.** El perfil por defecto trae

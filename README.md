@@ -172,13 +172,12 @@ para proyectar, el PDF con las notas del presentador o el PowerPoint editable.
 
 ### Lo que te va a preguntar antes de escribir nada
 
-Cuatro cosas, en un solo mensaje. Vale la pena contestarlas bien, porque de ellas depende
+Tres cosas, en un solo mensaje. Vale la pena contestarlas bien, porque de ellas depende
 todo lo demás:
 
 - **Audiencia**, y si es interna o va a un externo (ministerio, donante, comité). De ahí sale
   el nivel técnico y cuánto vocabulario hay que explicar.
 - **Duración**, que define el número de láminas.
-- **El mensaje único**: la frase que la audiencia debe recordar si olvida todo lo demás.
 - **Qué salida hace falta**, PDF o PowerPoint editable.
 
 Después propone un índice de una línea por lámina y **espera aprobación** antes de escribir la
@@ -291,8 +290,9 @@ sobre Heroku o Vercel.
 - **Qué datos maneja el sistema** (personales, de salud, ubicación). De eso depende la
   gravedad real y las implicaciones legales.
 - **Si se corre el paso opcional (VVAH)**, que encadena hallazgos y encuentra cosas que los
-  demás no ven, pero es el más lento y consume API de pago. Si no lo pides, se salta y queda
-  anotado en el alcance del reporte.
+  demás no ven, pero es el más lento y el que más tokens consume: va contra tu clave de API si
+  usa el SDK, o contra el uso de tu plan de Claude si usa el backend CLI. Si no lo pides, se
+  salta y queda anotado en el alcance del reporte.
 
 ### Lo que entrega
 
@@ -340,7 +340,3 @@ Las skills son archivos de texto. Cada una es una carpeta en `plugins/irem/skill
 Si encuentras que una skill se equivoca o le falta algo, corrige el `SKILL.md` y abre un
 pull request. Documentar el *por qué* de cada regla importa más que la regla: es lo que evita
 que alguien la deshaga después sin saber qué rompía.
-
-**Falta una skill en el plugin.** Existe una cuarta, `irem-word-formato`, que da a un
-documento de Word el formato institucional. Hoy vive solo en una máquina y no está aquí, así
-que el equipo no puede instalarla. Meterla al repositorio es un paso pendiente.

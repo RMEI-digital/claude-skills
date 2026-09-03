@@ -33,8 +33,6 @@ No es un resumen del informe: es la razón de ser de la misión.]
 | **Actividades el [DIA 2]** | **Participantes** |
 | [Actividad] | [Institución: nombre]<br>[Consultoras IREM] |
 
-\pagina
-
 ## Principales hallazgos
 
 ### [Nombre completo del actor visitado, tal como se llama a sí mismo]

@@ -6,12 +6,16 @@ date: today
 date-format: long
 lang: es
 format: irem-beamer
----
 
-<!-- La estructura va en los TÍTULOS, no en portadillas: el nombre de la sección se
-     repite y se califica con dos puntos. Si es una propuesta a un externo, los
-     nombres son los siete de la espina: La solicitud, Lo que sabemos, Lo que vemos,
-     Lo que consideramos, Lo que buscamos, Lo que proponemos, Siguientes pasos. -->
+# La estructura va en los TÍTULOS, no en portadillas: el nombre de la sección se
+# repite y se califica con dos puntos. Si es una propuesta a un externo, los
+# nombres son los siete de la espina: La solicitud, Lo que sabemos, Lo que vemos,
+# Lo que consideramos, Lo que buscamos, Lo que proponemos, Siguientes pasos.
+#
+# Este comentario va DENTRO del encabezado a propósito. Un comentario de HTML
+# entre el encabezado y la primera lámina le abre a Beamer una lámina vacía,
+# con los logotipos del pie y nada más, que nadie nota hasta proyectarla.
+---
 
 ## Primera sección: una idea por lámina
 

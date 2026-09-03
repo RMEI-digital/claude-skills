@@ -1,7 +1,7 @@
 {
   "name": "irem",
   "version": "1.9.0",
-  "description": "Skills institucionales de IREM: presentaciones en formato oficial IREM-BID (PDF o PowerPoint editable), repositorios privados en la organización RMEI-digital, y auditoría de seguridad de repositorios.",
+  "description": "Skills institucionales de IREM: informes de misión y documentos Word con el formato oficial IREM-BID, presentaciones en formato oficial IREM-BID (PDF o PowerPoint editable), repositorios privados en la organización RMEI-digital, y auditoría de seguridad de repositorios.",
   "author": {
     "name": "Mauro Ttito",
     "email": "maurottito@gmail.com"
@@ -18,6 +18,10 @@
     "github",
     "repositorios",
     "seguridad",
-    "auditoria"
+    "auditoria",
+    "word",
+    "docx",
+    "informes",
+    "mision"
   ]
 }

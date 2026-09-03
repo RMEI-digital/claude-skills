@@ -9,14 +9,16 @@ equipo, en lugar de vivir en la cabeza de una persona.
 
 En la práctica no cambia la forma de trabajar: se le pide a Claude lo que se necesita, en
 lenguaje normal, y la skill se activa sola cuando viene al caso. También se puede invocar por
-su nombre. Las tres empiezan con `irem-`, así que escribiendo `/irem` en Claude Code aparecen
+su nombre. Todas empiezan con `irem-`, así que escribiendo `/irem` en Claude Code aparecen
 todas. El prefijo no es decorativo: es lo que las hace encontrables sin recordar el nombre
 exacto.
 
-## Las tres skills
+## Las cinco skills
 
 | Skill | Para qué sirve |
 |---|---|
+| [`/irem-mision-informe`](#informes-de-misión-irem-mision-informe) | Convierte notas, transcripciones o apuntes de una misión de campo en el informe completo, preguntando por lo que falte. |
+| [`/irem-word-formato`](#documentos-word-irem-word-formato) | Da a cualquier documento de Word el formato institucional IREM/BID, con los logos en el encabezado. |
 | [`/irem-presentacion`](#presentaciones-irem-presentacion) | Presentaciones con el formato institucional IREM/BID, en PDF o en PowerPoint editable, con las notas del presentador incluidas. |
 | [`/irem-repo`](#repositorios-irem-repo) | Crea un repositorio nuevo en GitHub, privado y dentro de la organización, lo clona y deja el primer commit hecho. |
 | [`/irem-security-audit`](#seguridad-irem-security-audit) | Auditoría de seguridad de un repositorio: busca secretos en todo el historial de git y revisa los controles que faltan. |
@@ -54,6 +56,100 @@ cd claude-skills && ./instalar.sh
 
 Eso copia las skills a `~/.claude/skills/`. Funciona igual, pero hay que volver a correrlo
 cada vez que el repositorio cambie.
+
+## Informes de misión: `/irem-mision-informe`
+
+Convierte el material crudo de una misión de campo (una transcripción de reuniones, los
+apuntes del cuaderno, un correo largo, o las tres cosas) en el informe de misión completo.
+Se ocupa del **contenido**; el formato lo aplica `/irem-word-formato` en el último paso.
+
+Lo que la distingue de pedirle a Claude «resúmeme estas notas» es que conoce la estructura
+real de estos informes y, sobre todo, su espina analítica: cada actor visitado se cuenta
+siguiendo el **ciclo de vida del dato** (registro, consolidación, análisis, salida), y los
+desafíos de la última sección se agrupan por esas mismas etapas. Esa simetría es la que
+permite ver en qué eslabón se rompe la cadena, en lugar de tener una lista de visitas.
+
+También sabe qué preguntar. La etapa que más se olvida en las visitas es *Análisis*, porque
+en campo se habla de cómo se llena el formato y no de qué se hace después con el dato.
+
+### Cómo pedirla
+
+- «Hazme el informe de la misión a Quibdó, aquí están mis notas.»
+- «Pásame esta transcripción a informe de misión.»
+- «Tengo los apuntes de la visita, ármame el reporte.»
+
+### Lo que te va a preguntar
+
+Primero lee todo el material y te enseña un mapa de lo que encontró: qué actores se
+visitaron, qué días y de qué etapas hay información. Después pregunta solo por los huecos,
+en un mensaje y numerado, para que puedas responder de corrido:
+
+- **Siempre**: fechas, lugar, participantes y el disparador de la misión (qué oficio o
+  solicitud la originó, con fecha y firmante).
+- **Por cada actor**: las etapas del ciclo de las que no hay nada.
+- **Al final**: si hubo reunión de cierre y qué anexos existen.
+
+Dos o tres rondas como máximo. Si después de eso sigue faltando algo, lo deja marcado como
+pendiente visible en el documento en lugar de alargar el interrogatorio.
+
+Su regla más importante: **nunca inventa contenido**. Estos informes van al INS, al BID y a
+contrapartes de gobierno, así que si un dato falta lo pregunta o lo marca, pero no escribe
+algo plausible. Y distingue lo observado de lo dicho: si las notas dicen «mencionan que la
+positividad es del 67%», el informe dice que lo mencionaron, no que lo sea.
+
+### Lo que entrega
+
+| Archivo | Qué es |
+|---|---|
+| `INFORME.docx` | El informe con el formato institucional, listo para enviar |
+| `CONTENIDO.md` | El contenido en texto plano, que es lo que vas a querer editar la próxima vez |
+
+Te entrega los dos a propósito: corregir contenido en el `.md` es barato, y recompilar el
+Word cuesta un comando.
+
+## Documentos Word: `/irem-word-formato`
+
+Da a un documento de Word el formato institucional IREM/BID completo: los logos del BID y de
+mesoamérica MALARIA en el encabezado de todas las páginas, Calibri 12 justificado, títulos
+de sección numerados en romanos, viñetas, y tablas centradas con el encabezado gris.
+
+Sirve para dos cosas: **formatear** un `.docx` que ya existe, y **generar** uno nuevo desde
+texto o Markdown. La usa `/irem-mision-informe` como último paso, pero también vale sola
+para cualquier nota técnica o memorando.
+
+El formato no está escrito a mano en un script: vive en una plantilla derivada de un informe
+real, que conserva los estilos, el tema tipográfico, los márgenes, la numeración y el
+encabezado con los logos. Los scripts solo escriben bloques dentro de ella, así que el
+resultado sale igual **por construcción** y no por aproximación. Comparando el documento de
+referencia con uno generado, midiendo las coordenadas de cada línea con Word como
+renderizador, la primera página coincide exactamente y el documento entero da las mismas 12
+páginas.
+
+### Cómo pedirla
+
+- «Dale el formato institucional a este Word.»
+- «Unifica la tipografía de este documento.»
+- «Pasa estas notas a Word con el formato de la casa.»
+
+### Lo que te va a preguntar
+
+Poco: es la skill menos conversacional de las cinco. Si le das un `.docx`, lo reformatea y te
+dice cuántos bloques de cada tipo encontró, que es la forma de detectar una clasificación
+mala. Si le das texto suelto, lo primero es decidir qué línea es sección, qué es subtítulo y
+qué es viñeta, y eso lo propone antes de compilar.
+
+Si no tienes `uv` instalado (que es lo único que hace falta, porque se descarga Python solo),
+te lo dice y te acompaña a instalarlo en lugar de fallar con un error.
+
+### Dos cosas que conviene saber
+
+El documento de referencia usaba **dos grises distintos** en la misma tabla; la skill unifica
+a uno. Y añade `keepNext` a todos los títulos, que el original no tenía, para que ningún
+título quede solo al pie de una página. Las dos decisiones están anotadas en su `SKILL.md`.
+
+Normaliza además las inconsistencias que traía el original: párrafos que se habían quedado
+sin justificar, sangrías de lista sueltas y veinte numeraciones distintas para viñetas
+visualmente iguales.
 
 ## Presentaciones: `/irem-presentacion`
 

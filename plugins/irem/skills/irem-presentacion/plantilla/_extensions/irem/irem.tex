@@ -1,5 +1,5 @@
 %% ==========================================================================
-%%  Tema Beamer institucional — Mesoamérica Malaria (IREM) · BID
+%%  Tema Beamer institucional: Mesoamérica Malaria (IREM) · BID
 %%
 %%  Réplica de ppt_resultados_IREM_2025_master_logos.pptx, que es el master
 %%  vigente. Ese archivo trae su propia guía de estilo en la lámina 2:
@@ -58,14 +58,15 @@
 %%  del master declara y lo que usan de hecho las plantillas viejas de IREM.
 \IfFontExistsTF{Montserrat-Regular.otf}{%
   \setsansfont{Montserrat}[
+    Scale          = 1,
     Extension      = .otf,
     UprightFont    = *-Regular,
     BoldFont       = *-Bold,
     ItalicFont     = *-Italic,
     BoldItalicFont = *-BoldItalic]%
 }{%
-  \IfFontExistsTF{Montserrat}{\setsansfont{Montserrat}}{%
-    \IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{Helvetica Neue}}}%
+  \IfFontExistsTF{Montserrat}{\setsansfont{Montserrat}[Scale=1]}{%
+    \IfFontExistsTF{Arial}{\setsansfont{Arial}[Scale=1]}{\setsansfont{Helvetica Neue}[Scale=1]}}%
 }
 \IfFontExistsTF{Menlo}{\setmonofont{Menlo}[Scale=0.8]}{\setmonofont{Courier New}[Scale=0.88]}
 \renewcommand{\familydefault}{\sfdefault}
@@ -517,9 +518,16 @@
 %% --- Nota al pie de lámina -------------------------------------------------
 %%  El master remata sus láminas de tabla y de gráfico con una nota en gris
 %%  de 10.5 pt (→ 5, aquí 7). Es donde van los denominadores y las salvedades.
+%%  El \vspace del final no es decorativo: en una lámina donde la nota va
+%%  después de un \vspace*{\fill} (\cifra, \ideaGrande, \pregunta), el relleno
+%%  la empuja hasta el borde del área de texto de beamer, que baja más que los
+%%  77 mm útiles, y la nota termina encima del logotipo del pie. Con estos 4 mm
+%%  el relleno cede y la nota se queda arriba. En una lámina normal, donde la
+%%  nota sigue a una tabla, no se nota: son 4 mm de aire al final de todo.
 \newcommand{\notaPie}[1]{%
   \par\vspace{1.5mm}
   {\fontsize{7}{9}\selectfont\color{grisclaro}#1\par}
+  \vspace{4mm}
 }
 
 %% --- Tablas ----------------------------------------------------------------

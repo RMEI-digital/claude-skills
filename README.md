@@ -2,321 +2,206 @@
 
 Skills de Claude Code del equipo de **RMEI-digital**, instalables como plugin.
 
-Una *skill* es un conjunto de instrucciones que Claude carga solo cuando hacen falta. Sirve
-para que un procedimiento que alguien repite (armar una presentación con el formato
-institucional, crear un repositorio como toca) quede escrito una vez y lo pueda usar todo el
-equipo, en lugar de vivir en la cabeza de una persona.
-
-En la práctica no cambia la forma de trabajar: se le pide a Claude lo que se necesita, en
-lenguaje normal, y la skill se activa sola cuando viene al caso. También se puede invocar por
-su nombre. Todas empiezan con `irem-`, así que escribiendo `/irem` en Claude Code aparecen
-todas. El prefijo no es decorativo: es lo que las hace encontrables sin recordar el nombre
-exacto.
-
-## Las cinco skills
+Una *skill* es un procedimiento de la casa escrito una vez para que lo use todo el equipo, en
+lugar de vivir en la cabeza de una persona. No cambia la forma de trabajar: le pides a Claude
+lo que necesitas en lenguaje normal y la skill se activa sola. También puedes llamarla por su
+nombre, y todas empiezan con `irem-`, así que escribiendo `/irem` aparecen todas.
 
 | Skill | Para qué sirve |
 |---|---|
-| [`/irem-mision-informe`](#informes-de-misión-irem-mision-informe) | Convierte notas, transcripciones o apuntes de una misión de campo en el informe completo, preguntando por lo que falte. |
-| [`/irem-word-formato`](#documentos-word-irem-word-formato) | Da a cualquier documento de Word el formato institucional IREM/BID, con los logos en el encabezado. |
-| [`/irem-presentacion`](#presentaciones-irem-presentacion) | Presentaciones con el formato institucional IREM/BID, en PDF o en PowerPoint editable, con las notas del presentador incluidas. |
-| [`/irem-repo`](#repositorios-irem-repo) | Crea un repositorio nuevo en GitHub, privado y dentro de la organización, lo clona y deja el primer commit hecho. |
-| [`/irem-security-audit`](#seguridad-irem-security-audit) | Auditoría de seguridad de un repositorio: busca secretos en todo el historial de git y revisa los controles que faltan. |
+| [`/irem-mision-informe`](#informes-de-misión-irem-mision-informe) | Convierte notas o transcripciones de una misión de campo en el informe completo. |
+| [`/irem-word-formato`](#documentos-word-irem-word-formato) | Da a un documento de Word el formato institucional, con los logos en el encabezado. |
+| [`/irem-presentacion`](#presentaciones-irem-presentacion) | Presentaciones con el formato IREM/BID, en PDF o en PowerPoint editable. |
+| [`/irem-repo`](#repositorios-irem-repo) | Crea un repositorio nuevo en GitHub, privado y dentro de la organización. |
+| [`/irem-security-audit`](#seguridad-irem-security-audit) | Auditoría de seguridad de un repositorio: secretos en el historial y controles que faltan. |
 
 ## Instalar
 
-Dentro de Claude Code, dos comandos:
+### En Claude Code
 
 ```
 /plugin marketplace add RMEI-digital/claude-skills
 /plugin install irem
 ```
 
-Listo. Las skills quedan disponibles y se activan solas cuando vienen al caso, o se invocan
-por su nombre.
+Después, **cierra la sesión y abre una nueva**: las instrucciones se cargan al arrancar, así
+que sin ese paso las skills no aparecen. Al volver deberías ver las cinco `irem-*`.
 
-Para actualizar cuando se corrija algo:
+**Si el primer comando falla**, casi siempre es lo mismo: el repositorio es privado y tu `git`
+no sabe autenticarse con GitHub. Corre `gh auth login` y vuelve a intentarlo.
 
-```
-/plugin update irem
-```
-
-Después de actualizar hay que **abrir una sesión nueva**: las instrucciones se cargan al
-arrancar, y el propio comando lo avisa.
-
-### Si el plugin no funciona
-
-Como el repositorio es privado, `/plugin marketplace add` necesita que tu `git` sepa
-autenticarse con GitHub. Si da problemas, clona y usa el instalador:
+Hay un plan B, pero úsalo solo si de verdad te atoras:
 
 ```bash
 git clone https://github.com/RMEI-digital/claude-skills.git
 cd claude-skills && ./instalar.sh
 ```
 
-Eso copia las skills a `~/.claude/skills/`. Funciona igual, pero hay que volver a correrlo
-cada vez que el repositorio cambie.
+Copia las skills a `~/.claude/skills/` y **no se actualiza solo**: hay que repetirlo cada vez
+que el repositorio cambie. Y si después instalas el plugin, quedan duplicadas, así que borra
+antes las copias sueltas (`rm -rf ~/.claude/skills/irem-*`).
+
+### En Claude Cowork
+
+Tres caminos, en este orden.
+
+**1. El marketplace, igual que en Claude Code.** En **Customize > Plugins**, «Add marketplace»,
+escribe `RMEI-digital/claude-skills` e instala el plugin `irem`. Para traer cambios
+posteriores, el botón «Update» del marketplace. Como el repositorio es privado, tu cuenta de
+GitHub tiene que poder verlo; si no aparece, pasa al camino 2.
+
+**2. Descargar el repositorio y subir el plugin entero.** En GitHub, con la sesión iniciada,
+«Code» > «Download ZIP». Descomprime, comprime la carpeta `plugins/irem` (clic derecho,
+«Comprimir») y súbela en **Customize > Plugins**, con la opción de instalar desde archivo.
+Entran las cinco skills de una vez.
+
+**3. Subir una skill suelta.** Igual, pero comprimiendo solo su carpeta dentro de
+`plugins/irem/skills/`, y subiéndola en **Customize > Skills** con «+» > «Create skill» >
+«Upload a skill». El `.zip` debe contener la carpeta de la skill con su `SKILL.md` dentro. Para
+generarlos todos de una vez:
+
+```bash
+cd plugins/irem/skills && for s in */; do zip -qr ~/Desktop/"${s%/}.zip" "$s"; done
+```
+
+Los caminos 2 y 3 no se actualizan solos: al publicar una versión nueva hay que volver a bajar
+y subir. En planes Team o Enterprise, quien suba una skill puede compartirla con toda la
+organización desde **Customize > Skills > Share**, y así nadie repite la subida.
+
+Los plugins funcionan en Cowork y en Claude Code, no en el chat normal; las skills subidas como
+`.zip` sí funcionan también en el chat.
+
+### Lo que hay que instalar aparte
+
+Las skills son instrucciones: **las herramientas que usan no vienen dentro del plugin**. Cada
+una avisa al empezar de lo que le falta y acompaña a instalarlo, en vez de fallar con un error.
+
+| Skill | Necesita |
+|---|---|
+| Informes de misión y Word | `uv`, que se descarga Python solo |
+| Presentaciones | Quarto y LaTeX para el PDF; solo Python para el PowerPoint. La primera compilación tarda varios minutos porque LaTeX baja los paquetes que faltan: es normal, no la interrumpas. Hace falta además Montserrat, también en la máquina de quien reciba el `.pptx` |
+| Repositorios | `gh` instalado y `gh auth login` corrido por cada persona: ese login es interactivo y Claude no puede hacerlo |
+| Seguridad | TruffleHog, Bandit, Semgrep y `pip-audit` |
+
+### Actualizar
+
+`/plugin update irem`, y otra vez sesión nueva. **Nadie se entera solo de que hay una versión
+nueva**: hasta que corran ese comando siguen con la que tienen, así que cuando el cambio
+importe hay que avisar por el canal del equipo.
 
 ## Informes de misión: `/irem-mision-informe`
 
-Convierte el material crudo de una misión de campo (una transcripción de reuniones, los
-apuntes del cuaderno, un correo largo, o las tres cosas) en el informe de misión completo.
-Se ocupa del **contenido**; el formato lo aplica `/irem-word-formato` en el último paso.
+Convierte el material crudo de una misión (transcripciones, apuntes, correos) en el informe
+completo, con la estructura de siempre: cada actor contado según el ciclo de vida del dato, y
+los desafíos agrupados por esas mismas etapas.
 
-Lo que la distingue de pedirle a Claude «resúmeme estas notas» es que conoce la estructura
-real de estos informes y, sobre todo, su espina analítica: cada actor visitado se cuenta
-siguiendo el **ciclo de vida del dato** (registro, consolidación, análisis, salida), y los
-desafíos de la última sección se agrupan por esas mismas etapas. Esa simetría es la que
-permite ver en qué eslabón se rompe la cadena, en lugar de tener una lista de visitas.
+**Nunca inventa contenido.** Si un dato falta, lo pregunta o lo deja marcado como pendiente,
+pero no escribe algo plausible. Y distingue lo observado de lo dicho.
 
-También sabe qué preguntar. La etapa que más se olvida en las visitas es *Análisis*, porque
-en campo se habla de cómo se llena el formato y no de qué se hace después con el dato.
+**Se lo pides así:** «Hazme el informe de la misión a Quibdó, aquí están mis notas», «pásame
+esta transcripción a informe de misión».
 
-### Cómo pedirla
+**Te va a preguntar** solo por los huecos, después de leer todo y enseñarte qué encontró:
+fechas, lugar y participantes; el oficio que originó la misión; las etapas del ciclo de las
+que no hay información; y si hubo reunión de cierre.
 
-- «Hazme el informe de la misión a Quibdó, aquí están mis notas.»
-- «Pásame esta transcripción a informe de misión.»
-- «Tengo los apuntes de la visita, ármame el reporte.»
-
-### Lo que te va a preguntar
-
-Primero lee todo el material y te enseña un mapa de lo que encontró: qué actores se
-visitaron, qué días y de qué etapas hay información. Después pregunta solo por los huecos,
-en un mensaje y numerado, para que puedas responder de corrido:
-
-- **Siempre**: fechas, lugar, participantes y el disparador de la misión (qué oficio o
-  solicitud la originó, con fecha y firmante).
-- **Por cada actor**: las etapas del ciclo de las que no hay nada.
-- **Al final**: si hubo reunión de cierre y qué anexos existen.
-
-Dos o tres rondas como máximo. Si después de eso sigue faltando algo, lo deja marcado como
-pendiente visible en el documento en lugar de alargar el interrogatorio.
-
-Su regla más importante: **nunca inventa contenido**. Estos informes van al INS, al BID y a
-contrapartes de gobierno, así que si un dato falta lo pregunta o lo marca, pero no escribe
-algo plausible. Y distingue lo observado de lo dicho: si las notas dicen «mencionan que la
-positividad es del 67%», el informe dice que lo mencionaron, no que lo sea.
-
-### Lo que entrega
-
-| Archivo | Qué es |
-|---|---|
-| `INFORME.docx` | El informe con el formato institucional, listo para enviar |
-| `CONTENIDO.md` | El contenido en texto plano, que es lo que vas a querer editar la próxima vez |
-
-Te entrega los dos a propósito: corregir contenido en el `.md` es barato, y recompilar el
-Word cuesta un comando.
+**Recibes** el informe en Word listo para enviar y su contenido en texto plano. Los dos a
+propósito: corregir el texto es barato y recompilar el Word cuesta un comando.
 
 ## Documentos Word: `/irem-word-formato`
 
-Da a un documento de Word el formato institucional IREM/BID completo: los logos del BID y de
-mesoamérica MALARIA en el encabezado de todas las páginas, Calibri 12 justificado, títulos
-de sección numerados en romanos, viñetas, y tablas centradas con el encabezado gris.
+Da a un documento de Word el formato institucional completo: logos del BID y de mesoamérica
+MALARIA en el encabezado, Calibri 12 justificado, secciones numeradas en romanos, viñetas y
+tablas de encabezado gris. Sirve para **formatear** un `.docx` que ya existe y para **generar**
+uno nuevo desde texto. La usa la skill de informes en su último paso, pero vale sola para
+cualquier nota o memorando.
 
-Sirve para dos cosas: **formatear** un `.docx` que ya existe, y **generar** uno nuevo desde
-texto o Markdown. La usa `/irem-mision-informe` como último paso, pero también vale sola
-para cualquier nota técnica o memorando.
+**Se lo pides así:** «Dale el formato institucional a este Word», «pasa estas notas a Word con
+el formato de la casa».
 
-El formato no está escrito a mano en un script: vive en una plantilla derivada de un informe
-real, que conserva los estilos, el tema tipográfico, los márgenes, la numeración y el
-encabezado con los logos. Los scripts solo escriben bloques dentro de ella, así que el
-resultado sale igual **por construcción** y no por aproximación. Comparando el documento de
-referencia con uno generado, midiendo las coordenadas de cada línea con Word como
-renderizador, la primera página coincide exactamente y el documento entero da las mismas 12
-páginas.
+**Te va a preguntar** casi nada: es la menos conversacional. Si le das texto suelto, propone
+qué línea es sección, cuál subtítulo y cuál viñeta antes de compilar.
 
-### Cómo pedirla
-
-- «Dale el formato institucional a este Word.»
-- «Unifica la tipografía de este documento.»
-- «Pasa estas notas a Word con el formato de la casa.»
-
-### Lo que te va a preguntar
-
-Poco: es la skill menos conversacional de las cinco. Si le das un `.docx`, lo reformatea y te
-dice cuántos bloques de cada tipo encontró, que es la forma de detectar una clasificación
-mala. Si le das texto suelto, lo primero es decidir qué línea es sección, qué es subtítulo y
-qué es viñeta, y eso lo propone antes de compilar.
-
-Si no tienes `uv` instalado (que es lo único que hace falta, porque se descarga Python solo),
-te lo dice y te acompaña a instalarlo en lugar de fallar con un error.
-
-### Dos cosas que conviene saber
-
-El documento de referencia usaba **dos grises distintos** en la misma tabla; la skill unifica
-a uno. Y añade `keepNext` a todos los títulos, que el original no tenía, para que ningún
-título quede solo al pie de una página. Las dos decisiones están anotadas en su `SKILL.md`.
-
-Normaliza además las inconsistencias que traía el original: párrafos que se habían quedado
-sin justificar, sangrías de lista sueltas y veinte numeraciones distintas para viñetas
-visualmente iguales.
+**Recibes** el documento formateado, sin tocar el original, y el recuento de bloques de cada
+tipo que encontró. Vale la pena mirarlo: cero secciones en un documento que sí tiene capítulos
+delata una clasificación mala.
 
 ## Presentaciones: `/irem-presentacion`
 
-Genera presentaciones con la identidad visual oficial de **mesoamérica MALARIA** y del
-**BID**, replicada del master institucional `ppt_resultados_IREM_2025_master_logos.pptx`:
-portada con fotografía a sangre, Montserrat, logotipos en el pie, numerales 01/02/03 y tablas
-de cabecera azul.
+Presentaciones con la identidad visual oficial: portada con fotografía a sangre, Montserrat,
+logotipos en el pie, numerales 01/02/03 y tablas de cabecera azul, replicado del master
+institucional. Se escribe una sola vez y de ahí sale lo que haga falta, sin reescribir nada.
 
-La presentación se escribe una sola vez, en Quarto, y de ahí sale lo que haga falta: el PDF
-para proyectar, el PDF con las notas del presentador o el PowerPoint editable.
+**Se lo pides así:** «Hazme una presentación de 20 minutos sobre los resultados, para el equipo
+de laboratorio», «necesito una propuesta de 30 minutos para el ministerio», «pásame también el
+PowerPoint, que la contraparte va a editarlo».
 
-### Cómo pedirla
+**Te va a preguntar** tres cosas: **audiencia** (y si es interna o va a un externo),
+**duración** y **qué salida** hace falta. Después propone el índice, una línea por lámina, y
+espera tu aprobación antes de escribir. Ese es el momento de mover cosas: cambiar el índice
+cuesta un minuto y cambiar la presentación entera, una tarde.
 
-- «Hazme una presentación de 20 minutos sobre los resultados de la primera fase, para el
-  equipo de laboratorio.»
-- «Convierte este informe en una presentación para el comité.» (adjuntando el informe)
-- «Necesito una propuesta de 30 minutos para el ministerio de salud.»
-- «Pásame también el PowerPoint, que la contraparte va a editarlo.»
-- «En la lámina 7 sobra texto, pártela en dos.»
-
-### Lo que te va a preguntar antes de escribir nada
-
-Tres cosas, en un solo mensaje. Vale la pena contestarlas bien, porque de ellas depende
-todo lo demás:
-
-- **Audiencia**, y si es interna o va a un externo (ministerio, donante, comité). De ahí sale
-  el nivel técnico y cuánto vocabulario hay que explicar.
-- **Duración**, que define el número de láminas.
-- **Qué salida hace falta**, PDF o PowerPoint editable.
-
-Después propone un índice de una línea por lámina y **espera aprobación** antes de escribir la
-presentación. Ese momento es el bueno para mover cosas: cambiar el índice cuesta un minuto y
-cambiar la presentación entera, una tarde.
-
-### Las opciones
-
-| Qué quieres | Cómo lo pides | Qué recibes |
-|---|---|---|
-| PDF, que es lo normal | No hace falta decir nada | El PDF para proyectar y otro con las **notas del presentador** intercaladas |
-| PowerPoint editable | «en PowerPoint», «el pptx», «que lo puedan editar» | Un `.pptx` con las notas en el panel de notas |
-| Las dos cosas | «hazme las dos» | Los tres archivos, desde la misma fuente |
-| Propuesta a un externo | Di que va a un ministerio, un donante o un comité | La estructura fija de siete secciones que usa la organización |
-| Charla con demostraciones en vivo | Di cuántos demos y ejercicios habrá | La mitad de láminas: un demo consume minutos sin consumir láminas |
-
-La decisión entre PDF y PowerPoint **no cierra ninguna puerta**. Si entregaste el PDF y a la
-semana el BID pide el archivo editable, es un comando más sobre el mismo `.qmd`. No se
-reescribe nada, y no hay dos versiones del contenido que se desincronicen.
-
-**PDF** cuando la presentación la das tú: no se descuadra al cambiar de computadora.
-**PowerPoint** en cuanto alguien más tenga que meter mano. El `.pptx` no se dibuja de cero: la
-skill lleva el master institucional sin sus láminas de contenido, así que el fondo, los
-logotipos del pie, la portada completa y las fuentes Montserrat embebidas vienen del archivo
-original. Sale un PowerPoint normal, con formas nativas, que se edita como cualquier otro.
-
-### Lo que entrega
-
-Una carpeta con el `.qmd` (la fuente), los archivos finales y los scripts para volver a
-compilar:
-
-| Comando | Qué hace |
+| Si pides | Recibes |
 |---|---|
-| `./renderizar.sh archivo.qmd` | Compila los dos PDF |
-| `./renderizar-pptx.py archivo.qmd` | Genera el PowerPoint |
-| `./revisar.py archivo.qmd` | Revisa contenido y formato, y avisa de lo que está mal |
-| `./pptx-a-pdf.sh archivo.pptx` | Convierte el PowerPoint para poder mirarlo lámina por lámina |
+| Nada en particular | El PDF para proyectar y otro con las notas del presentador intercaladas |
+| «en PowerPoint», «el pptx» | Un `.pptx` editable, con las notas en el panel de notas |
+| «las dos» | Los tres archivos, desde la misma fuente |
 
-**Requisitos.** Para el PDF: Quarto, LaTeX y Montserrat. Para el PowerPoint no hace falta
-ninguno de los tres, solo Python. Montserrat sí hace falta en los dos casos, y hay que
-pedírsela también a quien reciba el `.pptx`: si no la tiene instalada, PowerPoint la sustituye
-y las líneas se parten en otro sitio. Es gratis, en Google Fonts.
+**PDF** cuando la presentación la das tú; **PowerPoint** en cuanto alguien más tenga que
+editarla. La decisión no cierra ninguna puerta: si después piden el editable, es un comando más
+sobre el mismo `.qmd`. Y dos cosas que conviene decirle, porque cambian el resultado: si va a un
+ministerio, un donante o un comité, usa la estructura fija de siete secciones; y si la charla
+lleva demostraciones en vivo, hacen falta la mitad de láminas.
+
+En la carpeta quedan los scripts para volver a compilar: `renderizar.sh` (los dos PDF),
+`renderizar-pptx.py` (el PowerPoint), `revisar.py` (revisa contenido y formato) y
+`pptx-a-pdf.sh` (convierte el PowerPoint para mirarlo lámina por lámina).
 
 ## Repositorios: `/irem-repo`
 
-Crea un repositorio nuevo **dentro de la organización** y **privado**, lo clona y deja el
-primer commit hecho, con README y `.gitignore`.
+Crea un repositorio nuevo en GitHub, **dentro de la organización** y **privado**, lo clona y
+deja el primer commit hecho. Las dos reglas son el punto: en la organización para que el
+conocimiento no se pierda cuando alguien rota, y privado siempre.
 
-Las dos reglas que automatiza:
+**Se lo pides así:** «Crea un repositorio para el tablero de indicadores», «necesito un repo
+nuevo para el análisis de la encuesta, en R».
 
-1. El repositorio va dentro de `RMEI-digital`, nunca en tu cuenta personal. Así la
-   información no se pierde, queda centralizada y el conocimiento permanece en la
-   organización aunque las personas roten.
-2. Siempre privado.
+**Te va a preguntar** el **nombre** (en minúsculas y con guiones), una **descripción de una
+línea** y el **lenguaje principal**. La descripción no es un trámite: es lo único que otra
+persona ve en el listado antes de abrirlo. Antes de crear nada te muestra el resumen y espera
+tu aprobación.
 
-### Cómo pedirla
-
-- «Crea un repositorio para el tablero de indicadores.»
-- «Necesito un repo nuevo para el análisis de la encuesta de hogares, en R.»
-- «Súbeme esto a GitHub.» (si la carpeta todavía no es un repositorio)
-
-### Lo que te va a preguntar
-
-- **Nombre**, en minúsculas y con guiones: `tablero-indicadores`, no `Tablero Indicadores`.
-- **Descripción de una línea.** No es un trámite: es lo único que otra persona ve en el
-  listado de la organización antes de abrirlo, así que tiene que decir qué es, no cómo se
-  llama.
-- **Lenguaje principal** (`Python`, `R`, `Node`, `Go`), para poner el `.gitignore` oficial de
-  GitHub.
-
-Antes de crear nada te muestra un resumen y espera tu aprobación. Crear un repositorio es
-visible para todo el equipo y el nombre no se cambia con comodidad.
-
-**Requisitos**: `gh` instalado (`brew install gh`) y autenticado (`gh auth login`, que es
-interactivo y lo tienes que correr tú). Si Claude te ofrece instalarlo, acepta; el login sigue
-siendo tuyo.
-
-**Lo que no hace, a propósito.** No mueve proyectos que ya existen: si la carpeta ya tiene
-commits, ese caso se resuelve a mano y con criterio, porque hacerlo mal tira la historia del
-proyecto. Tampoco protege la rama principal, invita colaboradores ni arma la estructura del
-proyecto: son decisiones del equipo, y se ofrecen aparte si vienen al caso.
+**Lo que no hace, a propósito:** no mueve proyectos que ya existen, porque si la carpeta ya
+tiene commits hacerlo mal tira la historia y eso se resuelve a mano. Tampoco protege ramas ni
+invita colaboradores; eso se ofrece aparte.
 
 ## Seguridad: `/irem-security-audit`
 
-Auditoría de seguridad de un repositorio, código e historial de git. Corre TruffleHog para
-buscar secretos vivos en **todo** el historial y en los archivos sin versionar, Bandit y
-Semgrep para análisis estático, `pip-audit` para dependencias con vulnerabilidades conocidas,
-VVAH como paso opcional, y (esto es lo que la distingue) una revisión manual de **controles
-ausentes**: autenticación, validación de firma, límites de tasa.
+Auditoría de un repositorio, código e historial. Busca secretos vivos en **todo** el historial
+de git, corre análisis estático y revisa a mano los **controles ausentes**: autenticación,
+validación de firma, límites de tasa.
 
-Esa distinción es la razón de ser de la skill: el análisis automático encuentra lo que está
-mal escrito, no lo que falta. Un endpoint sin autenticación no es código defectuoso, es código
-que no existe, y ninguna herramienta lo señala sola. En la revisión que la originó, Semgrep dio
-cero hallazgos y el repositorio tenía dos críticos y cuatro altos.
+Esa última parte es su razón de ser. En la revisión que la originó, el análisis automático dio
+cero hallazgos y el repositorio tenía dos críticos y cuatro altos: las herramientas encuentran
+código mal escrito, no código que falta.
 
-Pensada para repos pequeños de salud pública y datos personales, tipo Flask, Django o Node
-sobre Heroku o Vercel.
+**Se lo pides así:** «Hazme una auditoría de seguridad de este repositorio», «revisa si hay
+secretos en el historial de git».
 
-### Cómo pedirla
+**Te va a preguntar** si hay **acceso en vivo** (con acceso puede demostrar un hallazgo con un
+ejemplo real, que es lo que convence a un equipo), **qué datos maneja** el sistema, y si se
+corre el paso opcional de análisis con agentes, que es el más lento y el que más tokens
+consume.
 
-- «Hazme una auditoría de seguridad de este repositorio.»
-- «Revisa si hay secretos en el historial de git.»
-- «Corre los scripts de seguridad antes de que esto salga a producción.»
-
-### Lo que te va a preguntar
-
-- **Si hay acceso en vivo** (base de datos, Heroku o Vercel, credenciales). Con acceso puede
-  *demostrar* un hallazgo con un ejemplo real, que es lo que convence a un equipo; sin acceso
-  la revisión es estática, y lo dice.
-- **Qué datos maneja el sistema** (personales, de salud, ubicación). De eso depende la
-  gravedad real y las implicaciones legales.
-- **Si se corre el paso opcional (VVAH)**, que encadena hallazgos y encuentra cosas que los
-  demás no ven, pero es el más lento y el que más tokens consume: va contra tu clave de API si
-  usa el SDK, o contra el uso de tu plan de Claude si usa el backend CLI. Si no lo pides, se
-  salta y queda anotado en el alcance del reporte.
-
-### Lo que entrega
-
-| Archivo | Qué es |
-|---|---|
-| `SECURITY-REVIEW.md` | El reporte completo: cada hallazgo, su severidad, dónde está y cómo se corrige |
-| `SECURITY-REVIEW-RESUMEN.md` | Resumen ejecutivo en español, con lo urgente en una frase y las acciones para hoy |
-| `security-review/` | Las salidas crudas de cada herramienta, que prueban el alcance real de lo que se escaneó |
-
-Dos reglas suyas que vale la pena conocer antes de usarla. El JSON crudo de TruffleHog
-**nunca** se escribe dentro del repo auditado, porque trae los secretos en claro y guardarlo
-ahí reproduciría el defecto que se busca. Y no se filtra por tipo de resultado, porque
-`unverified` no significa falso positivo sino «no hay forma de comprobarlo desde aquí», que es
-el caso de una clave privada en el historial.
-
-La auditoría además **no commitea ni sube nada**: deja todo en tu copia de trabajo.
+**Recibes** el reporte completo, un resumen ejecutivo en español con lo urgente en una frase, y
+las salidas crudas de cada herramienta. No commitea ni sube nada: deja todo en tu copia de
+trabajo.
 
 ## Publicar un cambio
 
-`/plugin update` compara **versiones**, no contenido. Si corriges algo y no subes la versión
-en `plugins/irem/.claude-plugin/plugin.json`, el comando responde «ya estás al día» y todo el
+`/plugin update` compara **versiones**, no contenido. Si corriges algo y no subes la versión en
+`plugins/irem/.claude-plugin/plugin.json`, el comando responde «ya estás al día» y todo el
 equipo se queda con la copia vieja **sin ningún aviso**.
-
-Al publicar cualquier cambio:
 
 1. Sube `version` en `plugin.json`: parche para correcciones, menor para algo nuevo.
 2. `claude plugin validate .` debe pasar sin advertencias.
@@ -330,13 +215,19 @@ marketplace todavía no trajo el commit. Se fuerza con:
 git -C ~/.claude/plugins/marketplaces/rmei-digital pull
 ```
 
-Y después de actualizar hay que **abrir una sesión nueva**: el propio comando lo avisa.
-
 ## Cómo aportar
 
-Las skills son archivos de texto. Cada una es una carpeta en `plugins/irem/skills/` con un
-`SKILL.md` que dice qué hace, cuándo usarse y cómo trabajar.
+Cada skill es una carpeta en `plugins/irem/skills/` con un `SKILL.md` que dice qué hace, cuándo
+usarse y cómo trabajar. Si una se equivoca o le falta algo, corrige ese archivo y abre un pull
+request. Documentar el *por qué* de cada regla importa más que la regla: es lo que evita que
+alguien la deshaga después sin saber qué rompía.
 
-Si encuentras que una skill se equivoca o le falta algo, corrige el `SKILL.md` y abre un
-pull request. Documentar el *por qué* de cada regla importa más que la regla: es lo que evita
-que alguien la deshaga después sin saber qué rompía.
+`Guia-de-uso-skills-RMEI-digital.docx` es este mismo README en Word, para mandárselo a quien no
+va a abrir GitHub. Se genera desde `guia-de-uso.md`, que es su fuente, con la skill de formato:
+
+```bash
+uv run --with python-docx python plugins/irem/skills/irem-word-formato/generar.py \
+  guia-de-uso.md Guia-de-uso-skills-RMEI-digital.docx
+```
+
+Si cambias uno, cambia el otro: no hay nada que los sincronice solos.

@@ -1,13 +1,16 @@
-#!/usr/bin/env -S uv run --with pillow --script
+#!/usr/bin/env -S uv run --with pillow --with python-pptx --script
 """
 Revisa una presentación IREM antes de entregarla.
 
     ./revisar.py <archivo>.qmd
 
-Comprueba dos cosas distintas y las reporta por separado:
+Comprueba tres cosas distintas y las reporta por separado:
 
-  FORMATO   sobre los PNG de las láminas: que nada invada la banda de los
-            logotipos ni se salga por los lados, y que la portada sangre.
+  FORMATO   sobre los PNG de las láminas del PDF: que nada invada la banda de
+            los logotipos ni se salga por los lados, y que la portada sangre.
+  POWERPOINT sobre el .pptx, si lo hay: que ninguna forma se salga del área
+            útil, que el texto quepa en su caja y que ningún renglón se haya
+            quedado sin la tipografía o el color del formato.
   CONTENIDO sobre el .qmd: palabras por lámina, viñetas, títulos repetidos,
             marcadores sin resolver, cobertura de notas y, si es una propuesta
             a un externo, que estén las siete secciones y en orden.
@@ -27,6 +30,15 @@ MIN_LAMINAS_POR_SECCION = 2   # menos que esto y la sección no se gana su porta
 LAMINAS_POR_DISPLAY = 6       # una lámina de una sola frase por cada seis de contenido
 TOPE_VACIAS = 0.15            # proporción máxima de láminas con una frase o menos
 TINTA_MINIMA = 2.0            # % de tinta bajo el cual la lámina es "una frase"
+
+# --- Medidas del lienzo de PowerPoint --------------------------------------
+K = 338.667 / 160.0           # el mismo factor del generador
+AREA_FIN_PPT = 77.0 * K       # 163.0 mm: aquí empieza la banda de los logotipos
+MARGEN_IZQ_PPT = 9.5 * K      # los mismos márgenes que vigila el PDF
+#  El derecho no es el del cuerpo: el panel lateral del master llega a 321.6 mm
+#  (su placeholder mide 102.5 de ancho desde 219.1), y es parte del formato.
+MARGEN_DER_PPT = 322.5
+ALTURA_LINEA = 1.219          # altura natural de línea de Montserrat, en em
 
 DISPLAY = r"\\(?:ideaGrande|cifra|pregunta)\b"
 
@@ -78,15 +90,22 @@ def revisar_contenido(qmd):
     fallos, avisos = [], []
 
     secciones = [t for n, t, _ in laminas(cuerpo) if n == 1]
+    # Qué páginas del PDF llevan cintilla: esa sí baja a la banda del pie, por
+    # diseño, y si no se avisa aquí la revisión de formato la reporta como
+    # invasión en todas las presentaciones para público externo.
+    pagina, con_cintilla = 1, set()
     titulos, con_nota, total = [], 0, 0
     firmas = {}
     display, seguidas, max_seguidas, por_seccion, actual = 0, 0, 0, {}, None
 
     for nivel, titulo, cont in laminas(cuerpo):
+        pagina += 1
         if nivel == 1:
             actual = titulo
             por_seccion[actual] = 0
             continue
+        if "\\cintilla" in cont:
+            con_cintilla.add(pagina)
         total += 1
         if actual:
             por_seccion[actual] += 1
@@ -161,10 +180,10 @@ def revisar_contenido(qmd):
             f"por estructura, {vacias} de {paginas} láminas llevarían una frase o menos; "
             f"la cuenta buena es la de tinta, más abajo")
 
-    return secciones, total, con_nota, fallos, avisos, titulos
+    return secciones, total, con_nota, fallos, avisos, titulos, con_cintilla
 
 
-def revisar_formato(pdf):
+def revisar_formato(pdf, con_cintilla=()):
     from PIL import Image
 
     # El fondo del formato no es blanco: lleva un degradado gris tenue que baja
@@ -229,7 +248,7 @@ def revisar_formato(pdf):
             continue
         z = sum(1 for y in range(int(74.0 / mmy), int(77.0 / mmy))
                 for c in range(int(0.16 * W), int(0.88 * W)) if not bl(px[c, y], c, y))
-        if z > 60:
+        if z > 60 and i not in con_cintilla:
             fallos.append(f"lámina {i}: hay contenido en la banda de los logotipos")
         # Entre la base de los logotipos y la franja del pie no va nada. La
         # franja misma ocupa de 86 mm al borde, así que la ventana vigilada es
@@ -259,6 +278,143 @@ def revisar_formato(pdf):
     return len(pngs), fallos
 
 
+def revisar_pptx(pptx, qmd_laminas):
+    """Revisa el .pptx sin renderizarlo.
+
+    No sustituye mirar el archivo en PowerPoint, pero sí caza lo que se ve mal
+    solo al proyectar: una forma metida en la banda de los logotipos, un texto
+    que no cabe en su caja y, sobre todo, un renglón que se quedó con la
+    tipografía del tema (Arial) o con el azul de Google Slides que arrastran los
+    layouts del master. Eso último no se nota en la lámina hasta que alguien la
+    abre al lado de otra."""
+    from pptx import Presentation
+    from pptx.util import Emu
+
+    try:
+        from PIL import ImageFont
+        fuente = None
+        for base in (Path.home() / "Library/Fonts", Path("/Library/Fonts")):
+            if (base / "Montserrat-Regular.otf").exists():
+                fuente = ImageFont.truetype(str(base / "Montserrat-Regular.otf"), 1000)
+                break
+        if fuente is None:
+            r = subprocess.run(["kpsewhich", "Montserrat-Regular.otf"],
+                               capture_output=True, text=True)
+            if r.stdout.strip():
+                fuente = ImageFont.truetype(r.stdout.strip(), 1000)
+    except Exception:
+        fuente = None
+
+    def ancho_mm(t, pt):
+        if fuente is None:
+            return len(t) * 0.55 * pt * 25.4 / 72.0
+        return fuente.getlength(t) / 1000.0 * pt * 25.4 / 72.0
+
+    prs = Presentation(str(pptx))
+    mm = lambda v: Emu(v).mm
+    fallos, avisos = [], []
+    con_nota = 0
+
+    for i, lamina in enumerate(prs.slides, 1):
+        if lamina.has_notes_slide and lamina.notes_slide.notes_text_frame.text.strip():
+            con_nota += 1
+        for sh in lamina.shapes:
+            nombre = getattr(sh, "name", "forma")
+            # Las piezas del pie y del cierre viven ahí a propósito: el
+            # generador las nombra para poder saltárselas aquí.
+            if nombre.startswith(("pie-", "cierre-")):
+                continue
+            # Las imágenes del pie (logotipos, cintillas, banda del cierre) van
+            # ahí a propósito; lo que no puede bajar es el texto y las tablas.
+            if sh.shape_type == 13:
+                continue
+            try:
+                x, y = mm(sh.left), mm(sh.top)
+                w, h = mm(sh.width), mm(sh.height)
+            except (TypeError, ValueError):
+                continue
+            if sh.has_text_frame and not sh.text_frame.text.strip():
+                continue
+            if y + h > AREA_FIN_PPT + 1 and sh.has_text_frame:
+                # Una caja de texto alta pero medio vacía no es un problema: lo
+                # que importa es dónde termina el TEXTO, no la caja.
+                pt = 21
+                for p in sh.text_frame.paragraphs:
+                    for r in p.runs:
+                        if r.font.size:
+                            pt = r.font.size.pt
+                        break
+                    break
+                lineas = max(1, len(sh.text_frame.text.split("\n")))
+                alto_texto = lineas * pt * ALTURA_LINEA * 1.2 * 25.4 / 72.0
+                if y + alto_texto > AREA_FIN_PPT + 1:
+                    fallos.append(f"lámina {i}: «{nombre}» baja hasta "
+                                  f"{y + alto_texto:.0f} mm, dentro de la banda de "
+                                  f"los logotipos (el área útil termina en "
+                                  f"{AREA_FIN_PPT:.0f})")
+            # La portada tiene su propia geometría (el título arranca en
+            # 13.9 mm, no en el margen del cuerpo), así que los márgenes del
+            # área de contenido no le aplican. Es la misma excepción que hace
+            # la revisión del PDF.
+            if i == 1:
+                pass
+            elif x < MARGEN_IZQ_PPT - 1:
+                fallos.append(f"lámina {i}: «{nombre}» empieza en {x:.0f} mm, "
+                              f"fuera del margen izquierdo")
+            elif x + w > MARGEN_DER_PPT + 1:
+                fallos.append(f"lámina {i}: «{nombre}» llega a {x + w:.0f} mm, "
+                              f"fuera del margen derecho")
+            if not sh.has_text_frame:
+                continue
+            for p in sh.text_frame.paragraphs:
+                for r in p.runs:
+                    if not r.text.strip():
+                        continue
+                    if r.font.name not in ("Montserrat", "Menlo"):
+                        fallos.append(f"lámina {i}: «{r.text[:28]}» quedó en "
+                                      f"{r.font.name or 'la fuente del tema'}, "
+                                      f"no en Montserrat")
+                    if r.font.size is None:
+                        fallos.append(f"lámina {i}: «{r.text[:28]}» sin tamaño "
+                                      f"propio; hereda el del layout")
+            # Las cajas de tamaño fijo del formato (numerales, conceptos,
+            # realce) no crecen: si el texto no cabe, se sale por abajo.
+            if sh.shape_type == 1 and sh.has_text_frame:
+                tf = sh.text_frame
+                pt = 19
+                for p in tf.paragraphs:
+                    for r in p.runs:
+                        if r.font.size:
+                            pt = max(pt, r.font.size.pt)
+                util = w - mm(tf.margin_left or 0) - mm(tf.margin_right or 0)
+                alto = 0.0
+                for p in tf.paragraphs:
+                    texto = "".join(r.text for r in p.runs)
+                    if not texto:
+                        continue
+                    tam = next((r.font.size.pt for r in p.runs if r.font.size), pt)
+                    n, linea = 1, ""
+                    for palabra in texto.split():
+                        prueba = f"{linea} {palabra}".strip()
+                        if ancho_mm(prueba, tam) > util and linea:
+                            n += 1
+                            linea = palabra
+                        else:
+                            linea = prueba
+                    alto += n * tam * ALTURA_LINEA * 25.4 / 72.0
+                if alto > h - mm(tf.margin_top or 0) - mm(tf.margin_bottom or 0):
+                    fallos.append(f"lámina {i}: el texto «{tf.text[:28]}» no cabe "
+                                  f"en su caja; acórtalo")
+
+    n = len(prs.slides._sldIdLst)
+    if qmd_laminas and n != qmd_laminas:
+        fallos.append(f"el .pptx tiene {n} láminas y el .qmd describe {qmd_laminas}")
+    if n and con_nota / n < 0.5:
+        avisos.append(f"solo {con_nota} de {n} láminas llevan nota en el panel "
+                      f"de notas de PowerPoint")
+    return n, fallos, avisos
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit("Uso: ./revisar.py <archivo>.qmd")
@@ -266,7 +422,7 @@ def main():
     if not qmd.exists():
         sys.exit(f"No existe: {qmd}")
 
-    secciones, total, con_nota, fallos_c, avisos, titulos = revisar_contenido(qmd)
+    secciones, total, con_nota, fallos_c, avisos, titulos, con_cintilla = revisar_contenido(qmd)
 
     # La espina puede ir en portadillas (#) o en los títulos de lámina (##),
     # que es lo habitual. En el segundo caso el título es el nombre de la
@@ -308,22 +464,49 @@ def main():
     if not fallos_c and not avisos:
         print("  todo en regla")
 
+    # Cuántas láminas TIENE que haber: portada, una por sección con portadilla
+    # y una por lámina de contenido. Se compara contra lo que salió compilado,
+    # porque las dos formas de que sobre una lámina (un comentario de HTML
+    # antes de la primera, un bloque suelto) no dan ningún error y no se ven
+    # hasta proyectar.
+    esperadas = 1 + len(secciones) + total
+
     print("\nFORMATO")
     pdf = qmd.with_suffix(".pdf")
+    fallos_f = []
     if not pdf.exists():
         print(f"  no hay {pdf.name}; compila primero con ./renderizar.sh")
         n_fmt = None
-        fallos_f = []
     else:
-        n_fmt, fallos_f = revisar_formato(pdf)
+        n_fmt, fallos_f = revisar_formato(pdf, con_cintilla)
+        if n_fmt and n_fmt != esperadas:
+            fallos_f.insert(0, f"el PDF tiene {n_fmt} láminas y el .qmd describe "
+                               f"{esperadas}. Si sobra una y sale en blanco, casi "
+                               f"siempre es un comentario de HTML entre el "
+                               f"encabezado y la primera lámina: pásalo al "
+                               f"encabezado, con # delante")
         for f in fallos_f:
             print(f"  !! {f}")
         if not fallos_f:
             print(f"  {n_fmt} láminas, nada fuera de caja")
 
+    fallos_p = []
+    pptx = qmd.with_suffix(".pptx")
+    if pptx.exists():
+        print("\nPOWERPOINT")
+        n_ppt, fallos_p, avisos_p = revisar_pptx(pptx, esperadas)
+        for f in fallos_p:
+            print(f"  !! {f}")
+        for a in avisos_p:
+            print(f"  ·  {a}")
+        if not fallos_p and not avisos_p:
+            print(f"  {n_ppt} láminas, nada fuera de caja")
+        print("  (esto no lo renderiza: ábrelo en PowerPoint y míralo, o pasa")
+        print("   ./pptx-a-pdf.sh para convertirlo y revisar los PNG)")
+
     print("\nEsto no reemplaza mirar las láminas: revisa que el argumento se")
     print("entienda y que ninguna lámina se lea en voz alta.")
-    sys.exit(1 if (fallos_c or fallos_f) else 0)
+    sys.exit(1 if (fallos_c or fallos_f or fallos_p) else 0)
 
 
 if __name__ == "__main__":

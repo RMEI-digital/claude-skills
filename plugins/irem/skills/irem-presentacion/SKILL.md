@@ -1,15 +1,18 @@
 ---
 name: irem-presentacion
-description: Genera presentaciones en Quarto con el formato institucional Mesoamérica Malaria (IREM) / BID y las compila a PDF. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck" o "unas láminas" para el equipo, para una reunión, para el BID o para un donante; también cuando pida una propuesta para un ministerio, un comité o una contraparte de gobierno, o convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
+description: Genera presentaciones con el formato institucional Mesoamérica Malaria (IREM) / BID, en PDF o en PowerPoint editable, desde una sola fuente en Quarto. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck", "unas láminas", "un PowerPoint" o "un pptx" para el equipo, para una reunión, para el BID o para un donante; cuando pida el archivo editable para que lo modifique una contraparte; también cuando pida una propuesta para un ministerio, un comité o una contraparte de gobierno, o convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
 ---
 
 # Presentaciones institucionales IREM / BID
 
-Produce presentaciones en Quarto (`.qmd`) que compilan a PDF con la identidad
-visual oficial, replicada de `ppt_resultados_IREM_2025_master_logos.pptx`, que es
-el master vigente: portada de piezas sueltas con fotografía a sangre, Montserrat,
-logotipos de mesoamérica MALARIA y del BID en el pie, portadillas blancas y tablas
-de cabecera azul.
+Produce presentaciones con la identidad visual oficial, replicada de
+`ppt_resultados_IREM_2025_master_logos.pptx`, que es el master vigente: portada de
+piezas sueltas con fotografía a sangre, Montserrat, logotipos de mesoamérica
+MALARIA y del BID en el pie, portadillas blancas y tablas de cabecera azul.
+
+Se escribe una sola vez, en Quarto (`.qmd`), y de ahí salen **dos entregables**:
+el PDF para proyectar y el `.pptx` editable para quien tenga que meterle mano. El
+apartado siguiente dice cuál corresponde.
 
 ## Regla de oro
 
@@ -18,18 +21,42 @@ ni logotipos: usa la extensión `_extensions/irem/` tal como está. Si el usuari
 pide un color distinto, adviértele que rompe la identidad institucional antes de
 hacerlo.
 
+## Dos salidas, una sola fuente
+
+El `.qmd` es el mismo para las dos. Lo que cambia es con qué se compila:
+
+| | PDF (Beamer) | PowerPoint (`.pptx`) |
+|---|---|---|
+| Comando | `./renderizar.sh <archivo>.qmd` | `./renderizar-pptx.py <archivo>.qmd` |
+| Deja | `<archivo>.pdf` y `<archivo>-notas.pdf` | `<archivo>.pptx` |
+| Notas del presentador | en un PDF aparte, intercaladas después de cada lámina | en el panel de notas, que es donde PowerPoint las espera |
+| Lo puede editar quien la recibe | no, necesita Quarto y LaTeX | sí, es un PowerPoint normal |
+| Se ve igual en cualquier máquina | siempre | si quien lo abre tiene Montserrat instalada |
+
+**Por omisión, PDF.** Es lo que no se descuadra al cambiar de computadora.
+
+**PowerPoint en cuanto alguien más tenga que meter mano:** una contraparte que va a
+editar las láminas, un ministerio que pide el archivo, quien va a exponer desde su
+propia máquina, o una reunión donde se va a mover el orden en vivo.
+
+Si no está claro, haz las dos: es el mismo `.qmd` y son dos comandos. Lo que **no**
+se hace es escribir dos versiones del contenido.
+
 ## Cómo trabajar
 
 ### 1. Antes de escribir nada, consigue tres cosas
 
 Si el usuario no las dio, pregúntalas en un solo mensaje:
 
-- **Audiencia** — de ella depende el nivel técnico y cuánto vocabulario hay que explicar.
+- **Audiencia**: de ella depende el nivel técnico y cuánto vocabulario hay que explicar.
   Pregunta también **si es interna o si va a un externo** (ministerio, donante, comité,
   contraparte de gobierno): si es externa, la estructura no la inventas, está fija: la
   trae completa el apartado «Si la presentación es una propuesta a un externo».
-- **Duración** — define el número de láminas (ver presupuesto abajo).
-- **El mensaje único** — la frase que la audiencia debe recordar si olvida todo lo demás.
+- **Duración**: define el número de láminas (ver presupuesto abajo).
+- **El mensaje único**: la frase que la audiencia debe recordar si olvida todo lo demás.
+
+Y una cuarta, que no es de contenido pero cambia lo que entregas: **si hace falta el
+PowerPoint editable o basta el PDF.** Ver «Dos salidas, una sola fuente» arriba.
 
 Si el usuario trae material de origen (informe, notas, datos), léelo antes de
 proponer estructura. No resumas el documento lámina por lámina: eso produce
@@ -226,9 +253,20 @@ plugin.
 BASE="<el directorio base que te informó Claude Code>"
 mkdir -p <carpeta>
 cp -R "$BASE/plantilla/_extensions" <carpeta>/
-cp "$BASE/plantilla/renderizar.sh" "$BASE/plantilla/revisar.py" <carpeta>/
-chmod +x <carpeta>/renderizar.sh <carpeta>/revisar.py
+cp "$BASE/plantilla/plantilla-irem.pptx" <carpeta>/
+cp "$BASE/plantilla/renderizar.sh" "$BASE/plantilla/renderizar-pptx.py" \
+   "$BASE/plantilla/pptx-a-pdf.sh" "$BASE/plantilla/revisar.py" <carpeta>/
+chmod +x <carpeta>/*.sh <carpeta>/*.py
 ```
+
+Se copia todo aunque solo vayas a hacer una de las dos salidas: son unos cientos de
+kilobytes y así la otra está a un comando de distancia si la piden después.
+`_extensions/` es la extensión de Quarto para el PDF, y de ahí saca también el
+generador de PowerPoint los logotipos que no vienen en los layouts.
+
+**La carpeta tiene que estar en un sitio normal del usuario** (Documentos, el
+escritorio, un repositorio). Si la pones en `/tmp`, PowerPoint no puede exportar
+desde ahí: su sandbox lo bloquea, y lo hace en silencio, diciendo que guardó.
 
 Después escribe el `.qmd` en esa carpeta con este encabezado:
 
@@ -263,17 +301,28 @@ en la portada. Con `date: today` más `date-format: long` y `lang: es`, Quarto l
 escribe bien en español. Si necesitas una fecha fija, úsala en ISO
 (`date: 2026-08-24`) y deja que `date-format` la traduzca.
 
-**Montserrat tiene que estar instalada.** Es la tipografía que el master trae
-embebida y no viene con macOS. Sale del paquete de TeX Live:
+**Montserrat tiene que estar instalada**, y hacen falta las dos instalaciones,
+porque cada salida la busca en un sitio distinto:
 
 ```bash
-tlmgr install montserrat
+tlmgr install montserrat                 # para el PDF, vía TeX Live
+cp $(kpsewhich Montserrat-Regular.otf | xargs dirname)/Montserrat-{Regular,Bold,Italic,BoldItalic}.otf \
+   ~/Library/Fonts/                      # para PowerPoint, como fuente del sistema
 ```
 
-Sin ella la presentación compila igual pero sale en Arial, y eso ya no es el
-formato institucional. Compruébalo con `kpsewhich Montserrat-Regular.otf`.
+Sin la primera, el PDF compila igual pero sale en Arial, y eso ya no es el formato
+institucional; compruébalo con `kpsewhich Montserrat-Regular.otf`. Sin la segunda,
+PowerPoint sustituye la tipografía al abrir el `.pptx` y las líneas se parten en
+otro sitio.
+
+**Y hay que decírselo a quien lo reciba.** El `.pptx` lleva Montserrat embebida
+(viene del master), pero PowerPoint de Mac ignora las fuentes embebidas: en Windows
+se ve bien y en Mac no, salvo que la tengan instalada. Es gratis, en Google Fonts.
+El verificador no puede comprobar esto: pasa en la máquina del otro.
 
 ### 4. Compila y **verifica con tus propios ojos**
+
+**En PDF:**
 
 ```bash
 cd <carpeta> && ./renderizar.sh <archivo>.qmd
@@ -285,6 +334,18 @@ por omisión, así que sin esa segunda versión el guion no se ve en ninguna par
 
 La primera compilación puede tardar varios minutos porque TinyTeX instala paquetes
 que falten. Es normal; no la interrumpas.
+
+**En PowerPoint:**
+
+```bash
+cd <carpeta> && ./renderizar-pptx.py <archivo>.qmd
+```
+
+Genera `<archivo>.pptx`. Aquí no hay LaTeX: el generador lee el mismo `.qmd` y va
+montando las láminas sobre los layouts de `plantilla-irem.pptx`. Tarda un segundo.
+
+Solo un archivo, no dos: las notas del presentador van al panel de notas de
+PowerPoint, que es donde quien expone las va a buscar.
 
 **Nombra el `.qmd` sin espacios ni acentos.** Quarto convierte los espacios en
 guiones al escribir el PDF, así que el archivo de salida deja de coincidir con el
@@ -298,11 +359,29 @@ verificador, que revisa lo mecánico:
 ./revisar.py <archivo>.qmd
 ```
 
-Comprueba el **contenido** sobre el `.qmd` (palabras por lámina, viñetas, títulos
-repetidos, marcadores `[...]` sin resolver, cobertura de notas y, si es una propuesta a un
-externo, que estén las siete secciones y en orden) y el **formato** sobre los PNG (que
-nada invada la banda de los logotipos ni se salga por los lados, y que la portada sangre).
-Sale con código 1 si encuentra algo.
+Comprueba tres cosas y las reporta por separado. El **contenido**, sobre el `.qmd`
+(palabras por lámina, viñetas, títulos repetidos, marcadores `[...]` sin resolver,
+cobertura de notas y, si es una propuesta a un externo, que estén las siete secciones
+y en orden). El **formato**, sobre los PNG del PDF (que nada invada la banda de los
+logotipos ni se salga por los lados, que la portada sangre, y que el PDF tenga tantas
+láminas como describe el `.qmd`). Y **PowerPoint**, sobre el `.pptx` si existe: que
+ninguna forma se salga del área útil, que el texto quepa en su caja y que ningún
+renglón se haya quedado con la tipografía o el color que declaran los layouts, que no
+son los del formato. Sale con código 1 si encuentra algo.
+
+Lo de PowerPoint lo comprueba leyendo el archivo, sin renderizarlo, así que funciona
+en cualquier sistema. Para verlo de verdad hay que convertirlo, y eso ya es macOS con
+PowerPoint instalado:
+
+```bash
+./pptx-a-pdf.sh <archivo>.pptx
+```
+
+Deja `<archivo>-desde-pptx.pdf` y los PNG de todas las láminas en `.revision-pptx/`.
+El nombre no es capricho: si el PDF saliera como `<archivo>.pdf` pisaría el de Beamer
+sin avisar. Si el script se queda colgado, borra el `~$<archivo>.pptx` que deja
+PowerPoint al abrir: con ese archivo presente vuelve a abrir en solo lectura y el
+export no termina nunca.
 
 Lo que el verificador no puede juzgar es si el argumento se entiende, y eso es lo que
 importa. Así que después renderiza las láminas y míralas:
@@ -328,6 +407,16 @@ El verificador ya dejó estos PNG en `.revision/`. Revísalos y confirma, lámin
 
 Si algo desborda, la solución casi siempre es **partir la lámina en dos**, no
 reducir el tamaño de letra.
+
+Si hiciste el `.pptx`, mira también sus PNG (`.revision-pptx/`) y compáralos con los
+del PDF. Tienen que contar lo mismo. Además, tres cosas que solo se ven ahí:
+
+- **Nada en Arial.** Si un renglón salió en otra tipografía, es que se escapó de la
+  corrida que fija la fuente a mano, y eso el verificador sí lo caza: hazle caso.
+- **Ningún título celeste.** El azul del formato es `#367CBC`; el `#0070C0` que se
+  parece viene de los layouts del master y es un resto del export de Google Slides.
+- **Las notas, en el panel de notas.** Ábrelo y confirma que están, porque en el
+  `.pptx` no hay una segunda versión donde se vean.
 
 #### Lo que va a sangre, se mide; no se mira
 
@@ -394,7 +483,7 @@ de un bloque LaTeX crudo:
 
 **Nunca escribas `\begin{frame}` a mano.** Quarto ya tiene la lámina abierta y
 anidar un frame dentro de otro rompe la compilación con `! Extra }, or forgotten
-\endgroup` — el PDF sale truncado, con menos láminas de las que escribiste y sin
+\endgroup`, y el PDF sale truncado, con menos láminas de las que escribiste y sin
 mensaje evidente de qué pasó.
 
 | Comando | Para qué sirve |
@@ -414,6 +503,17 @@ mensaje evidente de qué pasó.
 Las láminas `.plain` no llevan pie, así que tampoco logotipos. **La última lámina de
 la presentación sí debe llevarlos**: agrégale `\logosPie` dentro del mismo bloque
 LaTeX. `\laminaGracias` ya trae su propia banda de logotipos.
+
+**Todos estos comandos funcionan igual en las dos salidas.** El generador de
+PowerPoint los lee del mismo bloque `{=latex}` y los dibuja con formas nativas: la
+caja verde de un numeral es una autoforma, la tabla es una tabla de PowerPoint y el
+recuadro de realce es un rectángulo redondeado. Quien reciba el archivo puede
+editarlos.
+
+Lo único que el `.pptx` no puede hacer es **ejecutar código**: un bloque
+` ```{r} ` o ` ```{python} ` que calcule una figura solo corre en el camino del PDF.
+Si la lámina lleva una figura calculada y hace falta el PowerPoint, guarda la figura
+como `.png` y ponla con `![](figura.png)`, que sí funciona en las dos.
 
 Si decides usar una portadilla, es automática: cada `#` genera una lámina blanca con el
 título centrado en azul, y nunca se escribe a mano. Recuerda que cada una es una lámina
@@ -523,8 +623,8 @@ una **secuencia**:
 
 | Los puntos son… | Usa | Por qué |
 |---|---|---|
-| Paralelos entre sí — conceptos, lineamientos, ideas de cierre | **Cajas** o **numerales** | Cada uno queda delimitado y se lee de un vistazo |
-| Una secuencia — primero esto, después aquello | **Lista** | Las cajas sugieren independencia y borran el orden, que es justo lo que importa |
+| Paralelos entre sí (conceptos, lineamientos, ideas de cierre) | **Cajas** o **numerales** | Cada uno queda delimitado y se lee de un vistazo |
+| Una secuencia: primero esto, después aquello | **Lista** | Las cajas sugieren independencia y borran el orden, que es justo lo que importa |
 | Uno depende del anterior | **Lista** | Igual: la caja rompe el hilo |
 
 Ejemplos de la práctica: las láminas de vocabulario van en cajas y las de objetivos
@@ -586,6 +686,27 @@ master pero no su escala de cuerpo: 14 pt sobre un lienzo del doble de ancho son
 6,6 pt proyectados, que no se leen. Los elementos de despliegue (portada, portadilla,
 cierre, numerales) sí usan el valor convertido, porque ahí sí funciona.
 
+**Y hay una trampa que ya mordió una vez: la plantilla de Quarto encoge Montserrat.**
+El LaTeX que genera trae `\defaultfontfeatures{Scale=MatchLowercase}`, que escala toda
+fuente cargada después para igualar la altura de x de la romana, que es Latin Modern.
+Montserrat tiene la x muy alta, así que la encoge al 82,5 %: la columna «Aquí» de la
+tabla decía 16 pt y el PDF componía 13,2. Medido, no supuesto. La corrección de
+densidad que argumenta este formato se perdía entera por ahí, y nadie lo vio porque
+las medidas se habían tomado sobre posiciones, no sobre tipografía.
+
+Por eso `irem.tex` carga la fuente con `Scale = 1` explícito. **No se lo quites**, y si
+alguna vez el PDF se ve más apretado de lo que dice esta tabla, mide antes de tocar
+nada:
+
+```bash
+uv run --with pymupdf python -c "
+import pymupdf; d=pymupdf.open('archivo.pdf')
+for b in d[3].get_text('dict')['blocks']:
+    for l in b.get('lines',[]):
+        for sp in l['spans']:
+            print(round(sp['size'],1),'pt', sp['font'], repr(sp['text'][:34]))"
+```
+
 ### Geometría
 
 Convertida del lienzo de PowerPoint (338,667 × 190,5 mm) al de Beamer
@@ -638,7 +759,7 @@ logotipo incrustado. Por eso aquí sí se posiciona elemento por elemento.
 | Barra verde | (6,6 , 23,7) mm | 50,6 × 4,4 mm, esquinas de 0,66 mm |
 | Volanta | centrada en la barra | máx. 47 mm, en blanco |
 | Título | (6,6 , 30,7) mm | 73,5 mm de ancho |
-| Autoría y fecha | (7,7 , 67,2) mm | — |
+| Autoría y fecha | (7,7 , 67,2) mm | . |
 | Cintilla de donantes | (7,1 , 76,0) mm | 66,3 mm de ancho |
 | Fotografía | (91,2 , −0,3) mm | 68,9 × 86,4 mm |
 
@@ -688,6 +809,48 @@ cintilla de donantes; estas se usan solo si el destinatario es externo (donante,
 comité), con `\cintilla{comite}` o `\cintilla{socios}`. Para material interno se
 omiten.
 
+## El `.pptx` por dentro
+
+Conviene saber de dónde sale, porque explica qué se puede tocar y qué no.
+
+`plantilla-irem.pptx` **es el master institucional** al que se le quitaron las veinte
+láminas de contenido. Conserva el slide master, los once layouts con sus nombres
+(TAPA, Portadillas, Titulo y contenido, Cierre, los de numerales, los cuatro de
+tabla), el tema, los medios y las cuatro variantes de Montserrat embebidas. Se deriva
+con `derivar-plantilla-pptx.py`, que solo hay que volver a correr si la institución
+publica un master nuevo.
+
+De ahí salen gratis, sin escribir una línea: el fondo con su degradado y su franja
+azul y verde (es el relleno del slide master, no una forma), los logotipos del pie en
+todas las láminas de contenido, y la portada entera con la fotografía a sangre, la
+barra verde y la cintilla de donantes. Por eso la portada del `.pptx` es idéntica a
+la del master aunque el generador solo escriba tres textos.
+
+Tres cosas que hay que tener presentes al tocar `renderizar-pptx.py`:
+
+- **Los layouts mienten.** El master arrastra restos del export de Google Slides: el
+  título viene declarado en 40 pt y en `#0070C0`, y el `fontScheme` del tema dice
+  Arial. Por eso el generador fija a mano tamaño, color y tipografía en cada renglón
+  que escribe. Si añades un elemento y no lo haces, saldrá en Arial y nadie lo notará
+  hasta verlo al lado de otra lámina.
+- **El interlineado no se declara igual.** LaTeX lo da en puntos absolutos
+  (`\fontsize{10}{14.5}`) y PowerPoint como múltiplo de la altura natural de línea de
+  la fuente, que en Montserrat es 1,219 em. Copiar el 1,45 tal cual separa las líneas
+  un 22 % de más. La conversión está en el archivo.
+- **Las láminas `.plain` usan `showMasterSp="0"`**, que es «ocultar gráficos de fondo»
+  en el menú de PowerPoint: quita los logotipos heredados del layout y deja el fondo,
+  que no es una forma. Es lo que hace que una lámina de una sola idea respire igual
+  que en el PDF.
+
+La escala es la misma en las dos salidas: el `.pptx` usa los puntos del PDF
+multiplicados por el factor de lienzo, **no** los 14-16 pt de cuerpo del master. Así
+las dos parten las líneas en las mismas palabras, que es la única forma de que una
+corrección hecha sobre una salida valga para la otra.
+
+Diferencias que quedan, medidas y aceptadas: la tabla arranca unos 4 mm más abajo, la
+rejilla de conceptos queda 2 mm más apretada y el título cae 0,6 mm más abajo. Nada de
+eso se ve salvo poniendo las dos láminas una encima de la otra.
+
 ## Criterios de calidad
 
 Antes de entregar, revisa que se cumpla todo esto:
@@ -713,6 +876,14 @@ Si es una propuesta a un externo, además:
 - Están las siete secciones y en su orden, empezando por «La solicitud».
 - «Siguientes pasos» dice qué se decide, quién y con qué fecha.
 
+Si entregas el `.pptx`, además:
+
+- `./revisar.py` no reporta nada en el bloque POWERPOINT.
+- Lo abriste, o miraste los PNG de `.revision-pptx/`, y cuenta lo mismo que el PDF.
+- Las notas del presentador están en el panel de notas.
+- Le dijiste a quien lo recibe que instale Montserrat, o asumes que lo abrirá en
+  Windows, donde la fuente embebida sí funciona.
+
 ## Errores frecuentes
 
 - **Volcar el informe en láminas.** La presentación es un argumento, no un resumen.
@@ -724,3 +895,13 @@ Si es una propuesta a un externo, además:
 - **Olvidar `\begin{numerados}`.** No da error, simplemente dibuja fuera de la lámina.
 - **Poner el subtítulo largo.** `subtitle` es la volanta de la barra verde, no un
   subtítulo: si es largo se encoge hasta volverse ilegible.
+- **Dejar un comentario de HTML entre el encabezado y la primera lámina.** Beamer le
+  abre una lámina vacía, con los logotipos del pie y nada más. No da ningún error y no
+  se nota hasta proyectarla; el verificador lo caza comparando cuántas láminas tiene el
+  PDF con cuántas describe el `.qmd`. Los comentarios van dentro del encabezado, con
+  `#` delante, que es donde Quarto los descarta.
+- **Escribir la presentación dos veces**, una para el PDF y otra para PowerPoint. Es el
+  mismo `.qmd` y son dos comandos. Si el contenido se bifurca, a la semana siguiente hay
+  dos presentaciones distintas y nadie sabe cuál es la buena.
+- **Trabajar en `/tmp` cuando hace falta el `.pptx`.** El sandbox de PowerPoint no
+  exporta desde ahí y lo hace en silencio: dice que guardó y no hay archivo.

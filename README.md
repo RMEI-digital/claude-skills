@@ -45,16 +45,30 @@ El prefijo no es decorativo: es lo que las hace encontrables sin recordar el nom
 
 ### `/irem-presentacion`
 
-Genera presentaciones en Quarto con el formato institucional **Mesoamérica Malaria (IREM) /
-BID** y las compila a PDF: portada oficial con fotografía a sangre, Montserrat, logotipos de
-mesoamérica MALARIA y del BID en el pie, numerales 01/02/03 y tablas de cabecera azul, todo
-replicado del master vigente `ppt_resultados_IREM_2025_master_logos.pptx`.
+Genera presentaciones con el formato institucional **Mesoamérica Malaria (IREM) / BID**:
+portada oficial con fotografía a sangre, Montserrat, logotipos de mesoamérica MALARIA y del
+BID en el pie, numerales 01/02/03 y tablas de cabecera azul, todo replicado del master
+vigente `ppt_resultados_IREM_2025_master_logos.pptx`.
 
-Produce dos PDF por presentación: uno para proyectar y otro con las **notas del presentador**
-intercaladas, que es el guion de quien expone.
+**Dos salidas, una sola fuente.** La presentación se escribe una vez, en Quarto, y de ahí
+sale lo que haga falta:
+
+- **PDF**, con una segunda versión que lleva las **notas del presentador** intercaladas, que
+  es el guion de quien expone.
+- **PowerPoint editable** (`.pptx`), para cuando el archivo tiene que poder modificarlo otra
+  persona: una contraparte, un ministerio, o quien vaya a exponer desde su máquina. Las notas
+  van al panel de notas, que es donde PowerPoint las espera.
+
+El `.pptx` no se dibuja de cero: la skill lleva el master institucional sin sus láminas de
+contenido, así que el fondo, los logotipos del pie, la portada completa y las fuentes
+Montserrat embebidas vienen del archivo original. Sale un PowerPoint normal, con formas
+nativas, que se edita como cualquier otro.
 
 Pídele una presentación y te va a preguntar tres cosas antes de escribir nada: audiencia,
 duración y el mensaje único. Vale la pena contestarlas bien.
+
+Para el PDF hacen falta Quarto y LaTeX; para el `.pptx`, nada más que Python. Montserrat
+tiene que estar instalada en los dos casos, y la skill dice cómo.
 
 ### `/irem-repo`
 

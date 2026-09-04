@@ -27,8 +27,9 @@ nombre, y todas empiezan con `irem-`, así que escribiendo `/irem` aparecen toda
 Después, **cierra la sesión y abre una nueva**: las instrucciones se cargan al arrancar, así
 que sin ese paso las skills no aparecen. Al volver deberías ver las cinco `irem-*`.
 
-**Si el primer comando falla**, casi siempre es lo mismo: el repositorio es privado y tu `git`
-no sabe autenticarse con GitHub. Corre `gh auth login` y vuelve a intentarlo.
+El repositorio es **público**: no hace falta cuenta de GitHub ni autenticarse para instalarlo.
+Si el primer comando falla, suele ser que tu `git` no puede salir a internet (el proxy o la VPN
+de la oficina), y el plan B de abajo sirve igual para ese caso.
 
 Hay un plan B, pero úsalo solo si de verdad te atoras:
 
@@ -47,11 +48,12 @@ Tres caminos, en este orden.
 
 **1. El marketplace, igual que en Claude Code.** En **Customize > Plugins**, «Add marketplace»,
 escribe `RMEI-digital/claude-skills` e instala el plugin `irem`. Para traer cambios
-posteriores, el botón «Update» del marketplace. Como el repositorio es privado, tu cuenta de
-GitHub tiene que poder verlo; si no aparece, pasa al camino 2.
+posteriores, el botón «Update» del marketplace. El repositorio es público, así que no necesitas
+conectar tu cuenta de GitHub ni que tu organización tenga habilitado el conector de GitHub. Si
+aun así no aparece, pasa al camino 2.
 
-**2. Descargar el repositorio y subir el plugin entero.** En GitHub, con la sesión iniciada,
-«Code» > «Download ZIP». Descomprime, comprime la carpeta `plugins/irem` (clic derecho,
+**2. Descargar el repositorio y subir el plugin entero.** En GitHub, «Code» > «Download ZIP»,
+sin necesidad de cuenta. Descomprime, comprime la carpeta `plugins/irem` (clic derecho,
 «Comprimir») y súbela en **Customize > Plugins**, con la opción de instalar desde archivo.
 Entran las cinco skills de una vez.
 
@@ -231,3 +233,14 @@ uv run --with python-docx python plugins/irem/skills/irem-word-formato/generar.p
 ```
 
 Si cambias uno, cambia el otro: no hay nada que los sincronice solos.
+
+## Licencia
+
+Las skills, las plantillas y los scripts se publican bajo [CC BY 4.0](LICENSE): cualquiera puede
+usarlos y adaptarlos, incluso comercialmente, citando a la IREM.
+
+Quedan **fuera** de esa licencia los logotipos institucionales (BID, mesoamérica MALARIA, OPS,
+Clinton Health Access Initiative, COMISCA, Proyecto Mesoamérica, Fondo Mundial, Gates y Carlos
+Slim) y la fotografía de portada de las presentaciones, que pertenecen a sus titulares. Si
+adaptas estas plantillas para otra organización, sustitúyelos por los tuyos. El detalle está en
+[`LICENSE`](LICENSE).

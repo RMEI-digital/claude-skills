@@ -2,8 +2,8 @@
 # Guía de uso
 
 **Repositorio:** RMEI-digital/claude-skills
-**Versión del plugin:** 1.10.1
-**Fecha:** 3 de septiembre de 2026
+**Versión del plugin:** 1.10.2
+**Fecha:** 4 de septiembre de 2026
 
 ## Qué son
 
@@ -30,7 +30,7 @@ Dos comandos, escritos dentro de Claude Code:
 
 Después, **cierra la sesión y abre una nueva**. Las instrucciones se cargan al arrancar, así que sin ese paso no aparecen. Al volver deberías ver las cinco skills irem-.
 
-**Si el primer comando falla**, casi siempre es lo mismo: el repositorio es privado y tu git no sabe autenticarse con GitHub. Corre gh auth login, contesta las preguntas que hace, y vuelve a intentarlo.
+El repositorio es **público**: no hace falta cuenta de GitHub ni autenticarse para instalarlo. Si el primer comando falla, suele ser que tu git no puede salir a internet (el proxy o la VPN de la oficina), y el plan B de abajo sirve igual para ese caso.
 
 Hay un plan B en el README del repositorio (clonarlo y correr ./instalar.sh), pero úsalo solo si de verdad te atoras: copia las skills a una carpeta local y **no se actualiza solo**, hay que repetirlo cada vez que el repositorio cambie. Y si después instalas el plugin, te quedan las skills duplicadas, así que borra las copias sueltas antes.
 
@@ -38,9 +38,9 @@ Hay un plan B en el README del repositorio (clonarlo y correr ./instalar.sh), pe
 
 Tres caminos, en este orden. Ninguno necesita terminal salvo que quieras.
 
-**1. El marketplace, igual que en Claude Code.** En Customize (Personalizar) > Plugins, elige «Add marketplace», escribe RMEI-digital/claude-skills e instala el plugin irem. Para traer los cambios que se publiquen después, el botón «Update» del marketplace. Como el repositorio es privado, tu cuenta de GitHub tiene que poder verlo; si no aparece, pasa al camino 2.
+**1. El marketplace, igual que en Claude Code.** En Customize (Personalizar) > Plugins, elige «Add marketplace», escribe RMEI-digital/claude-skills e instala el plugin irem. Para traer los cambios que se publiquen después, el botón «Update» del marketplace. El repositorio es público, así que no necesitas conectar tu cuenta de GitHub ni que tu organización tenga habilitado el conector de GitHub. Si aun así no aparece, pasa al camino 2.
 
-**2. Descargar el repositorio y subir el plugin entero.** En GitHub, con la sesión iniciada, el botón verde «Code» y «Download ZIP». Descomprime, entra en la carpeta plugins, comprime la carpeta irem (clic derecho, «Comprimir») y sube ese .zip en Customize > Plugins, con la opción de instalar desde archivo. Suben las cinco skills de una vez.
+**2. Descargar el repositorio y subir el plugin entero.** En GitHub, el botón verde «Code» y «Download ZIP», sin necesidad de cuenta. Descomprime, entra en la carpeta plugins, comprime la carpeta irem (clic derecho, «Comprimir») y sube ese .zip en Customize > Plugins, con la opción de instalar desde archivo. Suben las cinco skills de una vez.
 
 **3. Subir una skill suelta.** Igual que el anterior, pero comprimiendo solo la carpeta de la skill que te interese, dentro de plugins, irem, skills. Se sube en Customize > Skills, con el botón «+», «Create skill» y «Upload a skill». El .zip tiene que contener la carpeta de la skill con su archivo SKILL.md dentro.
 
@@ -172,3 +172,7 @@ El reporte completo, un resumen ejecutivo en español con lo urgente en una fras
 ## Si algo hay que corregir
 
 Cada skill es un archivo de texto dentro del repositorio. Si una se equivoca o le falta algo, se corrige ese archivo y se abre un pull request. Documentar el **porqué** de cada regla importa más que la regla: es lo que evita que alguien la deshaga sin saber qué rompía. Y al publicar hay que subir la versión del plugin: el comando de actualización compara versiones, no contenido, así que sin ese número el equipo se queda con la copia vieja y sin ningún aviso.
+
+## Licencia
+
+Las skills, las plantillas y los scripts se publican bajo Creative Commons Atribución 4.0 (CC BY 4.0): cualquiera puede usarlos y adaptarlos, incluso comercialmente, citando a la IREM. Quedan **fuera** los logotipos institucionales y la fotografía de portada de las presentaciones, que pertenecen a sus titulares; si adaptas estas plantillas para otra organización, sustitúyelos por los tuyos. El detalle está en el archivo LICENSE del repositorio.

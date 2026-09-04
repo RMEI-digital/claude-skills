@@ -242,5 +242,7 @@ usarlos y adaptarlos, incluso comercialmente, citando a la IREM.
 Quedan **fuera** de esa licencia los logotipos institucionales (BID, mesoamérica MALARIA, OPS,
 Clinton Health Access Initiative, COMISCA, Proyecto Mesoamérica, Fondo Mundial, Gates y Carlos
 Slim) y la fotografía de portada de las presentaciones, que pertenecen a sus titulares. Si
-adaptas estas plantillas para otra organización, sustitúyelos por los tuyos. El detalle está en
+adaptas estas plantillas para otra organización, sustitúyelos por los tuyos.
+
+El detalle, la atribución y las excepciones están en [`NOTICE.md`](NOTICE.md); el texto legal, en
 [`LICENSE`](LICENSE).

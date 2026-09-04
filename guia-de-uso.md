@@ -175,4 +175,4 @@ Cada skill es un archivo de texto dentro del repositorio. Si una se equivoca o l
 
 ## Licencia
 
-Las skills, las plantillas y los scripts se publican bajo Creative Commons Atribución 4.0 (CC BY 4.0): cualquiera puede usarlos y adaptarlos, incluso comercialmente, citando a la IREM. Quedan **fuera** los logotipos institucionales y la fotografía de portada de las presentaciones, que pertenecen a sus titulares; si adaptas estas plantillas para otra organización, sustitúyelos por los tuyos. El detalle está en el archivo LICENSE del repositorio.
+Las skills, las plantillas y los scripts se publican bajo Creative Commons Atribución 4.0 (CC BY 4.0): cualquiera puede usarlos y adaptarlos, incluso comercialmente, citando a la IREM. Quedan **fuera** los logotipos institucionales y la fotografía de portada de las presentaciones, que pertenecen a sus titulares; si adaptas estas plantillas para otra organización, sustitúyelos por los tuyos. El detalle, la atribución y las excepciones están en el archivo NOTICE.md del repositorio, y el texto legal en LICENSE.

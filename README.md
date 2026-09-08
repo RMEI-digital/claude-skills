@@ -9,6 +9,7 @@ nombre, y todas empiezan con `irem-`, así que escribiendo `/irem` aparecen toda
 
 | Skill | Para qué sirve |
 |---|---|
+| [`/irem-mision-agenda`](#agendas-de-misión-irem-mision-agenda) | Redacta la agenda de una misión, sea de definición de alcance, de capacitación o de monitoreo. |
 | [`/irem-mision-informe`](#informes-de-misión-irem-mision-informe) | Convierte notas o transcripciones de una misión de campo en el informe completo. |
 | [`/irem-word-formato`](#documentos-word-irem-word-formato) | Da a un documento de Word el formato institucional, con los logos en el encabezado. |
 | [`/irem-presentacion`](#presentaciones-irem-presentacion) | Presentaciones con el formato IREM/BID, en PDF o en PowerPoint editable. |
@@ -25,7 +26,7 @@ nombre, y todas empiezan con `irem-`, así que escribiendo `/irem` aparecen toda
 ```
 
 Después, **cierra la sesión y abre una nueva**: las instrucciones se cargan al arrancar, así
-que sin ese paso las skills no aparecen. Al volver deberías ver las cinco `irem-*`.
+que sin ese paso las skills no aparecen. Al volver deberías ver las seis `irem-*`.
 
 El repositorio es **público**: no hace falta cuenta de GitHub ni autenticarse para instalarlo.
 Si el primer comando falla, suele ser que tu `git` no puede salir a internet (el proxy o la VPN
@@ -55,7 +56,7 @@ aun así no aparece, pasa al camino 2.
 **2. Descargar el repositorio y subir el plugin entero.** En GitHub, «Code» > «Download ZIP»,
 sin necesidad de cuenta. Descomprime, comprime la carpeta `plugins/irem` (clic derecho,
 «Comprimir») y súbela en **Customize > Plugins**, con la opción de instalar desde archivo.
-Entran las cinco skills de una vez.
+Entran las seis skills de una vez.
 
 **3. Subir una skill suelta.** Igual, pero comprimiendo solo su carpeta dentro de
 `plugins/irem/skills/`, y subiéndola en **Customize > Skills** con «+» > «Create skill» >
@@ -85,11 +86,57 @@ una avisa al empezar de lo que le falta y acompaña a instalarlo, en vez de fall
 | Repositorios | `gh` instalado y `gh auth login` corrido por cada persona: ese login es interactivo y Claude no puede hacerlo |
 | Seguridad | TruffleHog, Bandit, Semgrep y `pip-audit` |
 
-### Actualizar
+### Actualizar cuando ya lo tienes instalado
 
-`/plugin update irem`, y otra vez sesión nueva. **Nadie se entera solo de que hay una versión
-nueva**: hasta que corran ese comando siguen con la que tienen, así que cuando el cambio
-importe hay que avisar por el canal del equipo.
+**No se actualiza solo.** Ni en Claude Code ni en Cowork hay actualización automática de
+plugins: hasta que corras la actualización sigues con la versión que instalaste, y no hay ningún
+aviso de que salió una nueva. Por eso, cuando el cambio importe, hay que avisar por el canal del
+equipo.
+
+En **Claude Code**:
+
+```
+/plugin update irem
+```
+
+Y **sesión nueva**, igual que al instalar. Para ver en qué versión estás, `claude plugin list`
+en la terminal, o `/plugin` y mirar la línea `irem@rmei-digital`. Si responde que ya estás al
+día justo después de que se publicó algo, el marketplace local todavía no trajo el cambio:
+
+```
+/plugin marketplace update rmei-digital
+```
+
+y repite el `update`.
+
+En **Claude Cowork**: en **Customize > Plugins**, el botón «Update» del marketplace
+`RMEI-digital/claude-skills`. Si lo instalaste subiendo un `.zip` (los caminos 2 y 3), no hay
+botón: hay que volver a bajar el repositorio y subirlo otra vez.
+
+## Agendas de misión: `/irem-mision-agenda`
+
+Redacta la agenda de una misión completa: antecedentes, objetivo general, objetivos específicos,
+productos esperados, metodología, participantes, la tabla día por día y los requerimientos
+técnicos y de movilidad. Cubre los tres tipos de misión del equipo (definición de alcance,
+capacitación, y monitoreo y acompañamiento) y añade sola las secciones propias de cada uno.
+
+Una agenda no es un cronograma: es el documento con el que la contraparte compromete a su gente
+y con el que después se juzga si la misión hizo lo que dijo que iba a hacer. Por eso lleva
+objetivos y metodología, y no solo la tabla de horas.
+
+**Nunca inventa contenido.** Lo que no está confirmado va como «Por confirmar» y te avisa de qué
+quedó así, para que lo cierres antes de enviarlo a la contraparte.
+
+**Se lo pides así:** «Hazme la agenda de la misión a Honduras», «convierte estas notas en el
+borrador de agenda», «agenda de la capacitación de facilitadores».
+
+**Te va a preguntar** de qué tipo es la misión, si el material no lo aclara, y después los huecos
+en un solo mensaje: fechas, ciudades y sedes, qué instituciones participan y con qué unidades,
+quién va por la IREM, el disparador de la misión y qué se hace cada día.
+
+**Recibes** la agenda en Word, su contenido en texto plano y la lista de lo que quedó como «Por
+confirmar». Antes de compilar pasa un verificador que revisa estructura y redacción: objetivos
+que no empiezan en infinitivo, metodología en viñetas, horas en am/pm, días sin tabla.
 
 ## Informes de misión: `/irem-mision-informe`
 
@@ -211,7 +258,8 @@ equipo se queda con la copia vieja **sin ningún aviso**.
 4. Avisa al equipo que corra `/plugin update irem`.
 
 Si `update` insiste en que ya estás al día justo después de un push, el clon local del
-marketplace todavía no trajo el commit. Se fuerza con:
+marketplace todavía no trajo el commit. Se fuerza con `/plugin marketplace update rmei-digital`
+o, a mano:
 
 ```bash
 git -C ~/.claude/plugins/marketplaces/rmei-digital pull

@@ -2,8 +2,8 @@
 # Guía de uso
 
 **Repositorio:** RMEI-digital/claude-skills
-**Versión del plugin:** 1.10.2
-**Fecha:** 4 de septiembre de 2026
+**Versión del plugin:** 1.11.1
+**Fecha:** 8 de septiembre de 2026
 
 ## Qué son
 
@@ -13,6 +13,7 @@ Una *skill* es un procedimiento de la casa escrito una vez para que lo use todo 
 
 | Skill | Para qué sirve |
 |---|---|
+| /irem-mision-agenda | Redacta la agenda de una misión, sea de definición de alcance, de capacitación o de monitoreo. |
 | /irem-mision-informe | Convierte notas o transcripciones de una misión de campo en el informe completo. |
 | /irem-word-formato | Da a un documento de Word el formato institucional, con los logos en el encabezado. |
 | /irem-presentacion | Presentaciones con el formato IREM/BID, en PDF o en PowerPoint editable. |
@@ -28,7 +29,7 @@ Dos comandos, escritos dentro de Claude Code:
 - /plugin marketplace add RMEI-digital/claude-skills
 - /plugin install irem
 
-Después, **cierra la sesión y abre una nueva**. Las instrucciones se cargan al arrancar, así que sin ese paso no aparecen. Al volver deberías ver las cinco skills irem-.
+Después, **cierra la sesión y abre una nueva**. Las instrucciones se cargan al arrancar, así que sin ese paso no aparecen. Al volver deberías ver las seis skills irem-.
 
 El repositorio es **público**: no hace falta cuenta de GitHub ni autenticarse para instalarlo. Si el primer comando falla, suele ser que tu git no puede salir a internet (el proxy o la VPN de la oficina), y el plan B de abajo sirve igual para ese caso.
 
@@ -40,7 +41,7 @@ Tres caminos, en este orden. Ninguno necesita terminal salvo que quieras.
 
 **1. El marketplace, igual que en Claude Code.** En Customize (Personalizar) > Plugins, elige «Add marketplace», escribe RMEI-digital/claude-skills e instala el plugin irem. Para traer los cambios que se publiquen después, el botón «Update» del marketplace. El repositorio es público, así que no necesitas conectar tu cuenta de GitHub ni que tu organización tenga habilitado el conector de GitHub. Si aun así no aparece, pasa al camino 2.
 
-**2. Descargar el repositorio y subir el plugin entero.** En GitHub, el botón verde «Code» y «Download ZIP», sin necesidad de cuenta. Descomprime, entra en la carpeta plugins, comprime la carpeta irem (clic derecho, «Comprimir») y sube ese .zip en Customize > Plugins, con la opción de instalar desde archivo. Suben las cinco skills de una vez.
+**2. Descargar el repositorio y subir el plugin entero.** En GitHub, el botón verde «Code» y «Download ZIP», sin necesidad de cuenta. Descomprime, entra en la carpeta plugins, comprime la carpeta irem (clic derecho, «Comprimir») y sube ese .zip en Customize > Plugins, con la opción de instalar desde archivo. Suben las seis skills de una vez.
 
 **3. Subir una skill suelta.** Igual que el anterior, pero comprimiendo solo la carpeta de la skill que te interese, dentro de plugins, irem, skills. Se sube en Customize > Skills, con el botón «+», «Create skill» y «Upload a skill». El .zip tiene que contener la carpeta de la skill con su archivo SKILL.md dentro.
 
@@ -63,11 +64,35 @@ Las skills son instrucciones: **las herramientas que usan no vienen dentro del p
 
 Para las presentaciones hace falta además la tipografía Montserrat, y hay que pedírsela también a quien reciba el PowerPoint: si no la tiene, su computadora la sustituye y las líneas se parten en otro sitio. Es gratis, en Google Fonts.
 
-### Cómo se actualizan
+### Cómo se actualizan cuando ya las tienes instaladas
 
-Con /plugin update irem, y otra vez sesión nueva.
+**No se actualizan solas.** Ni en Claude Code ni en Cowork hay actualización automática de plugins: hasta que corras la actualización sigues con la versión que instalaste, y no hay ningún aviso de que salió una nueva. Por eso, cuando el cambio importa, se avisa por el canal del equipo.
 
-**Nadie se entera solo de que hay una versión nueva.** Hasta que corran ese comando siguen con la que tienen, así que cuando el cambio importe hay que avisar por el canal del equipo.
+En **Claude Code**, con /plugin update irem, y otra vez sesión nueva. Para saber en qué versión estás, el comando claude plugin list en la terminal, o /plugin y mirar la línea irem@rmei-digital. Si responde que ya estás al día justo después de que se publicó algo, el marketplace local todavía no trajo el cambio: corre /plugin marketplace update rmei-digital y repite el update.
+
+En **Claude Cowork**, en Customize > Plugins, el botón «Update» del marketplace RMEI-digital/claude-skills. Si lo instalaste subiendo un .zip (los caminos 2 y 3 de arriba), no hay botón: hay que volver a bajar el repositorio y subirlo otra vez.
+
+## Agendas de misión: /irem-mision-agenda
+
+Redacta la agenda de una misión completa: antecedentes, objetivo general, objetivos específicos, productos esperados, metodología, participantes, la tabla día por día, y los requerimientos técnicos y de movilidad. Cubre los tres tipos de misión del equipo (definición de alcance, capacitación, y monitoreo y acompañamiento) y añade sola las secciones propias de cada uno.
+
+Una agenda no es un cronograma: es el documento con el que la contraparte compromete a su gente y con el que después se juzga si la misión hizo lo que dijo que iba a hacer. Por eso lleva objetivos y metodología, y no solo la tabla de horas.
+
+**Nunca inventa contenido.** Lo que no está confirmado va como «Por confirmar», y te avisa de qué quedó así para que lo cierres antes de enviarlo a la contraparte.
+
+### Se lo pides así
+
+- «Hazme la agenda de la misión a Honduras.»
+- «Convierte estas notas en el borrador de agenda.»
+- «Agenda de la capacitación de facilitadores.»
+
+### Te va a preguntar
+
+De qué tipo es la misión, si el material no lo aclara. Después, los huecos en un solo mensaje: fechas, ciudades y sedes, qué instituciones participan y con qué unidades, quién va por la IREM, el disparador de la misión y qué se hace cada día.
+
+### Recibes
+
+La agenda en Word, su contenido en texto plano y la lista de lo que quedó como «Por confirmar». Antes de compilar pasa un verificador que revisa estructura y redacción: objetivos que no empiezan en infinitivo, metodología en viñetas, horas en am/pm, días sin tabla.
 
 ## Informes de misión: /irem-mision-informe
 

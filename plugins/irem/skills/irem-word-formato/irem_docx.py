@@ -37,6 +37,7 @@ GRIS_ENCABEZADO = "D9D9D9"
 ANCHO_TABLA = 9784        # twips; la tabla es mas ancha que la caja de texto y va centrada
 NUM_SECCION = "53"        # numId de la plantilla: numeracion romana I. II. III.
 NUM_VINETA = "36"         # numId de la plantilla: vineta Symbol
+JUSTIFICAR_DESDE = 60     # caracteres: por debajo de esto, una columna no se justifica
 
 
 # ---------------------------------------------------------------- XML crudo
@@ -201,7 +202,7 @@ class Documento:
              _e("w:pStyle", val="NormalWeb"),
              self._numpr(NUM_SECCION),
              _e("w:spacing", before=0, beforeAutospacing=0, after=0, afterAutospacing=0),
-             _e("w:ind", left=540, hanging=270)],
+             _e("w:ind", left=0, hanging=0)],
             _rpr(negrita=True, fuente=self.fuente),
         )
         self._texto(p, texto, negrita=True)
@@ -282,6 +283,14 @@ class Documento:
         if alineaciones is None:
             alineaciones = ["both"] + ["center"] * (ncol - 1)
         alineaciones = list(alineaciones)[:ncol] + ["center"] * max(0, ncol - len(alineaciones))
+        # justificar solo tiene sentido donde hay texto largo: en una celda corta
+        # que parte en dos lineas, Word estira los espacios ("10:30      a" y
+        # "10:45" debajo), asi que esas columnas van a la izquierda
+        for j in range(ncol):
+            if alineaciones[j] == "both":
+                largo = max((len(str(f[j])) for f in filas if j < len(f)), default=0)
+                if largo < JUSTIFICAR_DESDE:
+                    alineaciones[j] = "left"
 
         tbl = OxmlElement("w:tbl")
         pr = OxmlElement("w:tblPr")
@@ -314,8 +323,7 @@ class Documento:
                 tcpr.append(_e("w:tcW", w=anchos[j], type="dxa"))
                 if es_enc:
                     tcpr.append(_e("w:shd", val="clear", color="auto", fill=GRIS_ENCABEZADO))
-                else:
-                    tcpr.append(_e("w:vAlign", val="center"))
+                tcpr.append(_e("w:vAlign", val="center"))
                 tc.append(tcpr)
                 jc = "center" if es_enc else alineaciones[j]
                 fmt = dict(pt=PT_TABLA, color="000000", negrita=es_enc)

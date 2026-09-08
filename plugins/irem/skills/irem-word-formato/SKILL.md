@@ -27,11 +27,11 @@ se corrige el texto. Las negritas y las cursivas se conservan tal como estén.
 | Cuerpo | 12 pt, justificado, interlineado sencillo, sin espacio después |
 | Título del documento | 12 pt, negrita, centrado |
 | Campo (`Fechas:`, `Lugar:`) | Etiqueta en negrita, valor normal |
-| Sección | Numeración romana automática (`I.` `II.` `III.`), negrita, sangría 540 con francesa de 270 |
+| Sección | Numeración romana automática (`I.` `II.` `III.`), negrita, al margen (sin sangría), un espacio entre el número y el texto |
 | Subtítulo de actor | Negrita, al margen |
 | Sub-subtítulo | Cursiva, al margen |
 | Viñetas | Viñeta Symbol a 720 twips con francesa de 360, justificadas |
-| Tablas | Calibri 11 pt, centradas, 9784 twips de ancho, rejilla completa, encabezado gris `D9D9D9` en negrita y centrado, celdas de datos con alineación vertical centrada, primera columna justificada y el resto centradas |
+| Tablas | Calibri 11 pt, centradas, 9784 twips de ancho, rejilla completa, encabezado gris `D9D9D9` en negrita y centrado (en horizontal y en vertical), todas las celdas centradas en vertical, primera columna justificada y el resto centradas. Una columna sin texto largo (menos de 60 caracteres en todas sus celdas) no se justifica: va a la izquierda, para que Word no estire los espacios al partir la celda en dos líneas |
 | Separación | Un párrafo en blanco entre bloques, no `space after` |
 
 El ritmo vertical (dónde va un párrafo en blanco y dónde no) lo pone el script

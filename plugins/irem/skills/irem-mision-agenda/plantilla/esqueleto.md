@@ -46,20 +46,20 @@ se espera acordar.]
 
 ## Agenda detallada
 
-\anchos 14 44 26 16
+\anchos 18 45 22 15
 
-### Día 1, [día de la semana X de MES]. [Lugar y foco del día]
+### Día 1 - [día de la semana X de MES]. [Lugar y foco del día]
 | Hora | Actividad | Participantes | Lugar |
-|---|---|---|---|
+|:---:|:---|---|---|
 | [9:00 a 11:00] | [Actividad. El detalle va tras `<br>`] | [Institución: nombre]<br>[IREM/BID: nombres] | [Sede] |
 | [11:00 a 12:30] | [Actividad] | [Institución]<br>[IREM/BID] | [Sede] |
 | [12:30 a 13:30] | Almuerzo | | |
 
-\anchos 14 44 26 16
+\anchos 18 45 22 15
 
-### Día 2, [día de la semana X de MES]. [Lugar y foco del día]
+### Día 2 - [día de la semana X de MES]. [Lugar y foco del día]
 | Hora | Actividad | Participantes | Lugar |
-|---|---|---|---|
+|:---:|:---|---|---|
 | [7:00 a 8:45] | [Traslado de A a B (1h45)] | IREM/BID | Vehículo |
 | [9:00 a 11:00] | [Actividad] | [Institución]<br>[IREM/BID] | [Sede] |
 

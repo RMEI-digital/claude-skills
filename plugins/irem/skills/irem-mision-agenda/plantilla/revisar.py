@@ -197,7 +197,7 @@ def revisa(ruta):
             faltas.append("La agenda detallada no tiene ninguna tabla.")
         dias = [t for t in s["subtitulos"] if re.match(r"^d[ií]a\s", t, re.I)]
         if not dias:
-            avisos.append("La agenda no tiene subtitulos de dia ('### Dia 1, ...'). "
+            avisos.append("La agenda no tiene subtitulos de dia ('### Dia 1 - ...'). "
                           "Cada dia lleva su subtitulo y su tabla.")
         elif len(dias) != len(s["tablas"]):
             avisos.append(f"Hay {len(dias)} subtitulos de dia y {len(s['tablas'])} "
@@ -217,7 +217,7 @@ def revisa(ruta):
                     avisos.append(f"Tabla {i} de la agenda: hora ilegible "
                                   f"{fila[0][:30]!r}.")
         if "anchos" not in texto:
-            avisos.append("No hay linea '\\anchos 14 44 26 16' antes de las tablas "
+            avisos.append("No hay linea '\\anchos 18 45 22 15' antes de las tablas "
                           "de la agenda. Sin ella las columnas salen iguales.")
 
     # ---- redaccion

@@ -64,11 +64,11 @@ Secciones numeradas en romanos, siempre en este orden:
 Un bloque por día, con subtítulo en negrita y tabla propia:
 
 ```
-\anchos 14 44 26 16
+\anchos 18 45 22 15
 
-### Día 1, lunes 20 de octubre. Santo Domingo: CECOVEZ y DTIC
+### Día 1 - lunes 20 de octubre. Santo Domingo: CECOVEZ y DTIC
 | Hora | Actividad | Participantes | Lugar |
-|---|---|---|---|
+|:---:|:---|---|---|
 | 8:30 a 11:00 | Apertura con CECOVEZ: objetivos de la misión y confirmación de la disponibilidad de los participantes<br>Presentación de los avances de la herramienta | CECOVEZ<br>IREM/BID | Oficinas CECOVEZ |
 ```
 
@@ -77,7 +77,13 @@ Reglas de la tabla:
 - Las cuatro columnas son fijas y siempre en ese orden. La columna *Lugar* es la
   que evita las confusiones logísticas cuando la misión se mueve entre oficinas
   y campo; si el lugar no aplica (un traslado, un almuerzo), la celda va vacía.
-- El subtítulo del día dice fecha, ciudad y foco del día. Sin guion largo.
+- Los anchos y las alineaciones de la línea `\anchos` y de la fila separadora se
+  copian tal cual: `Hora` centrada y con sitio para que el rango quepa en una
+  sola línea, `Actividad` a la izquierda porque es texto largo, y `Participantes`
+  y `Lugar` centradas.
+- El subtítulo del día se escribe `Día N - día de la semana y fecha`, seguido
+  de la ciudad y el foco del día: guion corto tras el número de día, y sin guion
+  largo en ninguna parte.
 - Horas en formato de 24 horas y rangos con la palabra "a": `9:00 a 12:00`.
   Nunca am/pm, nunca guion entre las horas.
 - Traslados, almuerzos y la puesta en común interna del equipo son filas de la

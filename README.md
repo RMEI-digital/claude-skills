@@ -18,6 +18,10 @@ nombre, y todas empiezan con `irem-`, así que escribiendo `/irem` aparecen toda
 
 ## Instalar
 
+**Instálalo en los dos ambientes.** Cowork y Claude Code llevan listas de plugins separadas:
+agregar el marketplace en uno no lo agrega en el otro, y lo mismo vale para las
+actualizaciones. Si usas los dos, repite el proceso en cada uno.
+
 ### En Claude Code
 
 ```
@@ -159,8 +163,8 @@ propósito: corregir el texto es barato y recompilar el Word cuesta un comando.
 
 ## Documentos Word: `/irem-word-formato`
 
-Da a un documento de Word el formato institucional completo: logos del BID y de mesoamérica
-MALARIA en el encabezado, Calibri 12 justificado, secciones numeradas en romanos, viñetas y
+Da a un documento de Word el formato institucional completo: logos de mesoamérica MALARIA y
+del BID en el encabezado, Calibri 12 justificado, secciones numeradas en romanos, viñetas y
 tablas de encabezado gris. Sirve para **formatear** un `.docx` que ya existe y para **generar**
 uno nuevo desde texto. La usa la skill de informes en su último paso, pero vale sola para
 cualquier nota o memorando.

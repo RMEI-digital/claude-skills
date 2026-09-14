@@ -9,7 +9,7 @@ Una agenda de misión no es un cronograma: es el documento que la contraparte le
 antes de comprometer a su gente, y con el que después se juzga si la misión hizo
 lo que dijo que iba a hacer. Por eso lleva objetivos, productos esperados y
 metodología, y no solo la tabla de horas. Esta skill se ocupa de ese contenido.
-El formato institucional (encabezado con los logos IDB y mesoamerica MALARIA,
+El formato institucional (encabezado con los logos mesoamerica MALARIA y BID,
 Calibri 12, títulos en romanos, tablas con encabezado gris) lo aplica
 `irem-word-formato` en el último paso.
 

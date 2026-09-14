@@ -2,8 +2,8 @@
 # Guía de uso
 
 **Repositorio:** RMEI-digital/claude-skills
-**Versión del plugin:** 1.11.1
-**Fecha:** 8 de septiembre de 2026
+**Versión del plugin:** 1.11.2
+**Fecha:** 14 de septiembre de 2026
 
 ## Qué son
 
@@ -21,6 +21,8 @@ Una *skill* es un procedimiento de la casa escrito una vez para que lo use todo 
 | /irem-security-audit | Auditoría de seguridad de un repositorio: secretos en el historial y controles que faltan. |
 
 ## Cómo instalarlas
+
+**Instálalo en los dos ambientes.** Cowork y Claude Code llevan listas de plugins separadas: agregar el marketplace en uno no lo agrega en el otro, y lo mismo vale para las actualizaciones. Si usas los dos, repite el proceso en cada uno.
 
 ### En Claude Code
 
@@ -115,7 +117,7 @@ El informe en Word, listo para enviar, y su contenido en texto plano. Los dos a 
 
 ## Documentos Word: /irem-word-formato
 
-Da a un documento de Word el formato institucional completo: logos del BID y de mesoamérica MALARIA en el encabezado, Calibri 12 justificado, secciones numeradas en romanos, viñetas y tablas de encabezado gris.
+Da a un documento de Word el formato institucional completo: logos de mesoamérica MALARIA y del BID en el encabezado, Calibri 12 justificado, secciones numeradas en romanos, viñetas y tablas de encabezado gris.
 
 Sirve para **formatear** un documento que ya existe y para **generar** uno nuevo desde texto. La usa la skill de informes en su último paso, pero vale sola para cualquier nota o memorando.
 

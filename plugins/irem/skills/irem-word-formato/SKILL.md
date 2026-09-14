@@ -1,6 +1,6 @@
 ---
 name: irem-word-formato
-description: Da a un documento de Word el formato institucional IREM/BID completo, con los logos IDB y mesoamerica MALARIA en el encabezado, Calibri 12, títulos numerados en romanos, viñetas, tablas con encabezado gris y el espaciado de la casa. Sirve para dos cosas: formatear un .docx que ya existe ("dale formato a este Word", "aplica el formato institucional", "unifica la tipografía del documento") y generar uno nuevo desde texto o Markdown ("hazme un informe de misión", "pásame estas notas a Word con el formato"). No la uses para presentaciones (esa es irem-presentacion).
+description: Da a un documento de Word el formato institucional IREM/BID completo, con los logos mesoamerica MALARIA y BID en el encabezado, Calibri 12, títulos numerados en romanos, viñetas, tablas con encabezado gris y el espaciado de la casa. Sirve para dos cosas: formatear un .docx que ya existe ("dale formato a este Word", "aplica el formato institucional", "unifica la tipografía del documento") y generar uno nuevo desde texto o Markdown ("hazme un informe de misión", "pásame estas notas a Word con el formato"). No la uses para presentaciones (esa es irem-presentacion).
 ---
 
 # Formato de documentos Word IREM/BID
@@ -22,7 +22,7 @@ se corrige el texto. Las negritas y las cursivas se conservan tal como estén.
 | Elemento | Regla |
 |---|---|
 | Página | Carta (21.59 x 27.94 cm), márgenes 2.54 cm en los cuatro lados |
-| Encabezado | Logos IDB + mesoamerica MALARIA arriba a la izquierda, en todas las páginas |
+| Encabezado | Logos mesoamerica MALARIA + BID arriba a la izquierda, en todas las páginas |
 | Fuente | Calibri (opción `--fuente` para cambiarla) |
 | Cuerpo | 12 pt, justificado, interlineado sencillo, sin espacio después |
 | Título del documento | 12 pt, negrita, centrado |

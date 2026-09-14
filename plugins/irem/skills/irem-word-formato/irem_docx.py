@@ -4,7 +4,7 @@ Libreria para construir documentos Word con el formato institucional IREM/BID.
 
 El formato no se reconstruye a mano: sale de plantilla.docx, que conserva tal
 cual los estilos, el tema tipografico, los margenes, la numeracion y el
-encabezado con los logos IDB + mesoamerica MALARIA del documento de referencia.
+encabezado con los logos mesoamerica MALARIA + BID del documento de referencia.
 Aqui solo se escriben los bloques (titulo, secciones, cuerpo, vinetas, tablas)
 con las propiedades medidas de ese documento.
 """

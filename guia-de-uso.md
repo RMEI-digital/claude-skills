@@ -2,8 +2,8 @@
 # Guía de uso
 
 **Repositorio:** RMEI-digital/claude-skills
-**Versión del plugin:** 1.11.2
-**Fecha:** 14 de septiembre de 2026
+**Versión del plugin:** 1.11.3
+**Fecha:** 15 de septiembre de 2026
 
 ## Qué son
 
@@ -59,7 +59,7 @@ Las skills son instrucciones: **las herramientas que usan no vienen dentro del p
 
 | Skill | Necesita |
 |---|---|
-| Informes de misión y Word | uv, que se descarga Python solo |
+| Agendas, informes de misión y Word | uv, que se descarga Python solo |
 | Presentaciones | Quarto y LaTeX para el PDF; para el PowerPoint, solo Python. La primera compilación tarda varios minutos porque LaTeX baja los paquetes que le faltan: es normal, no la interrumpas |
 | Repositorios | gh instalado, y gh auth login corrido por ti. Ese login es interactivo: Claude no puede hacerlo por ti |
 | Seguridad | TruffleHog, Bandit, Semgrep y pip-audit |

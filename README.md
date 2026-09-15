@@ -85,7 +85,7 @@ una avisa al empezar de lo que le falta y acompaña a instalarlo, en vez de fall
 
 | Skill | Necesita |
 |---|---|
-| Informes de misión y Word | `uv`, que se descarga Python solo |
+| Agendas, informes de misión y Word | `uv`, que se descarga Python solo |
 | Presentaciones | Quarto y LaTeX para el PDF; solo Python para el PowerPoint. La primera compilación tarda varios minutos porque LaTeX baja los paquetes que faltan: es normal, no la interrumpas. Hace falta además Montserrat, también en la máquina de quien reciba el `.pptx` |
 | Repositorios | `gh` instalado y `gh auth login` corrido por cada persona: ese login es interactivo y Claude no puede hacerlo |
 | Seguridad | TruffleHog, Bandit, Semgrep y `pip-audit` |

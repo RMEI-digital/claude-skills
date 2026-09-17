@@ -4,7 +4,11 @@ Genera un .docx con el formato institucional IREM/BID a partir de un Markdown
 ligero.
 
 Uso:
-    uv run --with python-docx python generar.py FUENTE.md [SALIDA.docx] [--fuente Calibri]
+    uv run --with python-docx python generar.py FUENTE.md [SALIDA.docx] [--fuente Calibri] [--borrador]
+
+Opciones:
+    --fuente NOMBRE          fuente del documento (por defecto Calibri)
+    --borrador               marca de agua BORRADOR en el encabezado (apagada por omision)
 
 Marcado que se reconoce:
     # Titulo                 titulo del documento (centrado, negrita).
@@ -18,11 +22,15 @@ Marcado que se reconoce:
     - item                   vineta (tambien '*' o '•')
     | a | b |                tabla (con fila separadora |---|---|)
     \\anchos 66 34            anchos relativos de columna para la tabla siguiente
+    \\horizontal              gira a apaisada la tabla siguiente
+    \\vertical                deja en vertical la tabla siguiente aunque no quepa
     \\pagina                  salto de pagina
     **negrita** *cursiva*    dentro de cualquier parrafo
 
 Los parrafos en blanco de separacion los pone el generador segun el ritmo
-vertical del formato: no hay que escribirlos.
+vertical del formato: no hay que escribirlos. La orientacion de cada tabla
+tambien se decide sola: solo hace falta \\horizontal o \\vertical cuando el
+criterio automatico se equivoca.
 """
 import re
 import sys
@@ -63,6 +71,7 @@ def bloques(lineas):
     """Agrupa las lineas en bloques (tipo, contenido)."""
     i = 0
     anchos = None
+    orientacion = None
     while i < len(lineas):
         cruda = lineas[i]
         linea = cruda.strip()
@@ -81,14 +90,32 @@ def bloques(lineas):
             i += 1
             continue
 
+        if linea in ("\\horizontal", "\\apaisado"):
+            orientacion = "horizontal"
+            i += 1
+            continue
+
+        if linea == "\\vertical":
+            orientacion = "vertical"
+            i += 1
+            continue
+
+        if linea.startswith("\\"):
+            # una directiva que no se reconoce se tira con un aviso: antes acababa
+            # impresa en el documento como un parrafo de texto literal
+            print(f"Aviso: directiva desconocida, se ignora: {linea}", file=sys.stderr)
+            i += 1
+            continue
+
         # tabla: bloque de lineas consecutivas que empiezan por '|'
         if linea.startswith("|"):
             filas = []
             while i < len(lineas) and lineas[i].strip().startswith("|"):
                 filas.append(parte_fila(lineas[i]))
                 i += 1
-            yield ("tabla", (filas, anchos))
+            yield ("tabla", (filas, anchos, orientacion))
             anchos = None
+            orientacion = None
             continue
 
         m = re.match(r"^(#{1,4})\s+(.*)$", linea)
@@ -149,7 +176,7 @@ def alineaciones_de(sep):
     return salida
 
 
-def escribe_tabla(doc, filas, anchos):
+def escribe_tabla(doc, filas, anchos, orientacion=None):
     sep = next((f for f in filas if es_separador(f)), None)
     cuerpo = [f for f in filas if not es_separador(f)]
     if not cuerpo:
@@ -170,7 +197,8 @@ def escribe_tabla(doc, filas, anchos):
     alin = alineaciones_de(sep) if sep else None
     if alin and any(a is None for a in alin):
         alin = [a or ("both" if j == 0 else "center") for j, a in enumerate(alin)]
-    doc.tabla(cuerpo, encabezados=encabezados, pesos=pesos, alineaciones=alin)
+    doc.tabla(cuerpo, encabezados=encabezados, pesos=pesos, alineaciones=alin,
+              orientacion=orientacion)
 
 
 def construye(texto, fuente):
@@ -191,7 +219,7 @@ def construye(texto, fuente):
         elif tipo == "campo":
             doc.campo(contenido[0] + " ", contenido[1])
         elif tipo == "tabla":
-            escribe_tabla(doc, contenido[0], contenido[1])
+            escribe_tabla(doc, *contenido)
         elif tipo == "pagina":
             doc.salto_pagina()
     return doc
@@ -199,6 +227,9 @@ def construye(texto, fuente):
 
 def main(argv):
     args = list(argv[1:])
+    borrador = "--borrador" in args
+    if borrador:
+        args.remove("--borrador")
     fuente = "Calibri"
     if "--fuente" in args:
         k = args.index("--fuente")
@@ -212,8 +243,11 @@ def main(argv):
     entrada = Path(args[0])
     salida = Path(args[1]) if len(args) > 1 else entrada.with_suffix(".docx")
     doc = construye(entrada.read_text(encoding="utf-8"), fuente)
+    if borrador:
+        doc.marca_borrador()
     doc.guardar(salida)
-    print(f"Generado con fuente '{fuente}': {salida}")
+    marca = " y marca de agua BORRADOR" if borrador else ""
+    print(f"Generado con fuente '{fuente}'{marca}: {salida}")
 
 
 if __name__ == "__main__":

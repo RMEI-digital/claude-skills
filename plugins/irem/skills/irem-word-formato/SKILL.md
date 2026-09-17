@@ -31,7 +31,8 @@ se corrige el texto. Las negritas y las cursivas se conservan tal como estén.
 | Subtítulo de actor | Negrita, al margen |
 | Sub-subtítulo | Cursiva, al margen |
 | Viñetas | Viñeta Symbol a 720 twips con francesa de 360, justificadas |
-| Tablas | Calibri 11 pt, centradas, 9784 twips de ancho, rejilla completa, encabezado gris `D9D9D9` en negrita y centrado (en horizontal y en vertical), todas las celdas centradas en vertical, primera columna justificada y el resto centradas. Una columna sin texto largo (menos de 60 caracteres en todas sus celdas) no se justifica: va a la izquierda, para que Word no estire los espacios al partir la celda en dos líneas |
+| Tablas | Calibri 11 pt, centradas, 9784 twips de ancho, rejilla completa, encabezado gris `D9D9D9` en negrita y centrado (en horizontal y en vertical), todas las celdas centradas en vertical, primera columna justificada y el resto centradas. Una columna sin texto largo (menos de 60 caracteres en todas sus celdas) no se justifica: va a la izquierda, para que Word no estire los espacios al partir la celda en dos líneas. Solo la primera fila se repite al cortar página |
+| Tablas anchas | Una tabla que no cabe legible en vertical se gira sola: va en su propia sección apaisada, a 12960 twips, y el documento sigue en vertical después |
 | Separación | Un párrafo en blanco entre bloques, no `space after` |
 
 El ritmo vertical (dónde va un párrafo en blanco y dónde no) lo pone el script
@@ -72,8 +73,12 @@ ejemplo, cero secciones en un documento que sí tiene capítulos).
 Se escribe el contenido en un `.md` con el marcado de abajo y se compila:
 
 ```sh
-uv run --with python-docx python generar.py FUENTE.md [SALIDA.docx] [--fuente Calibri]
+uv run --with python-docx python generar.py FUENTE.md [SALIDA.docx] [--fuente Calibri] [--borrador]
 ```
+
+`--borrador` pone la marca de agua BORRADOR (gris, en diagonal, detrás del
+texto) en el encabezado de todas las páginas. Va apagada: solo se pasa si el
+usuario la pide. Aplicarla dos veces no la duplica.
 
 Si el usuario trae texto suelto (pegado de un correo, de unas notas, de otro
 documento), el trabajo es clasificarlo en este marcado antes de compilar: qué
@@ -91,13 +96,25 @@ línea es sección, qué línea es subtítulo, qué es viñeta y qué es cuerpo.
 | `- item` | Viñeta (también `*` o `•`) |
 | `\| a \| b \|` | Tabla, con fila separadora `\|---\|---\|` |
 | `\anchos 66 34` | Anchos relativos de columna de la tabla siguiente |
+| `\horizontal` | Gira a apaisada la tabla siguiente |
+| `\vertical` | Deja en vertical la tabla siguiente aunque no quepa |
 | `\pagina` | Salto de página |
 | `**negrita**`, `*cursiva*` | Dentro de cualquier párrafo |
 
 En las tablas: la primera fila es encabezado; una fila intermedia con todas sus
 celdas en negrita también se pinta como encabezado (sirve para tablas de agenda
-por días). `<br>` dentro de una celda es un salto de línea. Los dos puntos de
-Markdown (`:---:`) fijan la alineación de la columna.
+por días), aunque solo la primera se repite al cortar página. `<br>` dentro de
+una celda es un salto de línea. Los dos puntos de Markdown (`:---:`) fijan la
+alineación de la columna.
+
+La orientación de cada tabla se decide sola: si el token más largo de alguna
+columna no cabe en el ancho que le toca, y sí cabría girando la tabla, la tabla
+va en apaisado. `\horizontal` y `\vertical` sirven para mandar sobre esa
+decisión cuando se equivoca, y valen solo para la tabla que viene detrás. Dos
+tablas apaisadas seguidas comparten una sola sección.
+
+Una línea que empiece por `\` y no sea una de estas directivas se ignora con un
+aviso por la salida de error, en vez de acabar impresa en el documento.
 
 ## Dos cosas en las que el formato se aparta del documento de referencia
 

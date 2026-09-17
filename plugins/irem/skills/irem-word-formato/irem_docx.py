@@ -9,11 +9,13 @@ Aqui solo se escriben los bloques (titulo, secciones, cuerpo, vinetas, tablas)
 con las propiedades medidas de ese documento.
 """
 from pathlib import Path
+from xml.sax.saxutils import escape
+import copy
 import re
 
 try:
     from docx import Document
-    from docx.oxml import OxmlElement
+    from docx.oxml import OxmlElement, parse_xml
     from docx.oxml.ns import qn
 except ModuleNotFoundError:                       # mensaje util para quien no es tecnico
     import sys
@@ -38,6 +40,36 @@ ANCHO_TABLA = 9784        # twips; la tabla es mas ancha que la caja de texto y 
 NUM_SECCION = "53"        # numId de la plantilla: numeracion romana I. II. III.
 NUM_VINETA = "36"         # numId de la plantilla: vineta Symbol
 JUSTIFICAR_DESDE = 60     # caracteres: por debajo de esto, una columna no se justifica
+
+# Secciones apaisadas. El ancho util es el de la pagina menos los dos margenes
+# de la plantilla (1440 twips cada uno): 15840 - 2880 = 12960.
+PGSZ_VERTICAL = (12240, 15840)
+PGSZ_APAISADA = (15840, 12240)
+ANCHO_TABLA_APAISADA = 12960
+BLANCOS_APAISADO = 2      # a cada lado de la tabla, o arranca pegada al borde de la seccion
+
+# Para saber si una tabla cabe en vertical hay que estimar cuanto ocupa el token
+# mas largo de cada columna, que es lo que Word no puede partir sin cortar la
+# palabra. Medido sobre los avances de Calibri.ttf a 11 pt, un caracter va de 85
+# twips ("Vigilancia") a 117 ("OBSERVACIONES"); los identificadores largos, que
+# son los que de verdad fuerzan el giro ("SM-2024-000123-ABC"), caen en 106-110.
+TWIPS_POR_CARACTER = 105
+MARGEN_CELDA = 216        # twips: los 108 de relleno que Word deja a cada lado de la celda
+
+# Marca de agua de borrador: texto gris girado 315 grados, detras del texto y
+# centrado respecto al margen. Va en DrawingML y no en el WordArt VML clasico de
+# las marcas de Word porque ese ya no se dibuja: el XML sobrevive al abrir y
+# guardar, pero no se ve ni en pantalla ni al exportar a PDF.
+ID_MARCA = "MarcaBorrador"
+TEXTO_MARCA = "BORRADOR"
+GRIS_MARCA = "D9D9D9"
+ROT_MARCA = 18900000      # 315 grados, en sesentamilesimas de grado
+EMU_POR_PUNTO = 12700
+PT_MARCA = 96             # tamano de "BORRADOR"; un texto mas largo se reduce para caber
+EM_POR_CARACTER = 0.59    # cuadratines que ocupa una mayuscula de Calibri, medido
+# Word no dibuja la forma si su caja sin girar no cabe entre los margenes, asi que
+# el tamano se limita por el ancho util de la pagina vertical: 12240 - 2880 twips.
+ANCHO_MARGEN_PT = 468
 
 
 # ---------------------------------------------------------------- XML crudo
@@ -101,6 +133,90 @@ def sin_marcas(texto):
     return "".join(t for t, _, _ in trozos(texto))
 
 
+# ------------------------------------------- cuanto ocupa una tabla en la pagina
+
+def _token_mas_largo(filas, j):
+    """El token sin espacios mas largo de una columna, cabecera incluida."""
+    largo = 0
+    for fila in filas:
+        if j < len(fila):
+            for token in sin_marcas(str(fila[j])).split():
+                largo = max(largo, len(token))
+    return largo
+
+
+def _columna_corta(filas, j, ancho):
+    return _token_mas_largo(filas, j) * TWIPS_POR_CARACTER > ancho - MARGEN_CELDA
+
+
+def _no_cabe_vertical(filas, anchos):
+    """
+    Una columna se queda corta cuando su token mas largo no cabe en el ancho que
+    le toca: ahi Word parte la palabra por la mitad y la tabla se vuelve altisima.
+    Solo se gira si alguna columna se queda corta y deja de quedarse al girar, de
+    modo que un token absurdo, que tampoco cabria apaisado, no arrastre la tabla a
+    una seccion nueva para nada.
+    """
+    total = sum(anchos)
+    for j, ancho in enumerate(anchos):
+        girado = int(ANCHO_TABLA_APAISADA * ancho / total)
+        if _columna_corta(filas, j, ancho) and not _columna_corta(filas, j, girado):
+            return True
+    return False
+
+
+def _reparte(anchos, ancho_total):
+    """Lleva los anchos a otro total guardando las proporciones entre columnas."""
+    total = sum(anchos)
+    nuevos = [int(ancho_total * a / total) for a in anchos]
+    nuevos[-1] += ancho_total - sum(nuevos)
+    return nuevos
+
+
+# --------------------------------------------------- marca de agua de borrador
+
+NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+NS_WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+NS_W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+WP_DOCPR = "{%s}docPr" % NS_WP
+
+
+def _marca_xml(texto, fuente, ident):
+    """El parrafo con la marca de agua, ya medido para el texto que lleve."""
+    largo = max(1, len(texto))
+    pt = min(PT_MARCA, ANCHO_MARGEN_PT / (largo * EM_POR_CARACTER))
+    cx = int(largo * EM_POR_CARACTER * pt * EMU_POR_PUNTO)
+    cy = int(1.4 * pt * EMU_POR_PUNTO)     # alto de linea holgado, para que no recorte
+    texto = escape(texto)
+    return (
+        f'<w:p xmlns:w="{NS_W}"><w:r><w:rPr><w:noProof/></w:rPr>'
+        f'<w:drawing xmlns:wp="{NS_WP}">'
+        '<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"'
+        ' relativeHeight="251658752" behindDoc="1" locked="0" layoutInCell="0"'
+        ' allowOverlap="1"><wp:simplePos x="0" y="0"/>'
+        '<wp:positionH relativeFrom="margin"><wp:align>center</wp:align></wp:positionH>'
+        '<wp:positionV relativeFrom="margin"><wp:align>center</wp:align></wp:positionV>'
+        f'<wp:extent cx="{cx}" cy="{cy}"/>'
+        '<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:wrapNone/>'
+        f'<wp:docPr id="{ident}" name="{ID_MARCA}"/>'
+        f'<a:graphic xmlns:a="{NS_A}"><a:graphicData uri="{NS_WPS}">'
+        f'<wps:wsp xmlns:wps="{NS_WPS}"><wps:cNvSpPr txBox="1"/>'
+        f'<wps:spPr><a:xfrm rot="{ROT_MARCA}"><a:off x="0" y="0"/>'
+        f'<a:ext cx="{cx}" cy="{cy}"/></a:xfrm>'
+        '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+        '<a:noFill/><a:ln><a:noFill/></a:ln></wps:spPr>'
+        '<wps:txbx><w:txbxContent><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r>'
+        f'<w:rPr><w:rFonts w:ascii="{fuente}" w:hAnsi="{fuente}" w:cs="{fuente}"/>'
+        f'<w:color w:val="{GRIS_MARCA}"/><w:sz w:val="{int(pt * 2)}"/>'
+        f'<w:szCs w:val="{int(pt * 2)}"/></w:rPr>'
+        f'<w:t>{texto}</w:t></w:r></w:p></w:txbxContent></wps:txbx>'
+        '<wps:bodyPr rot="0" vert="horz" wrap="none" lIns="0" tIns="0" rIns="0" bIns="0"'
+        ' anchor="ctr" anchorCtr="0"><a:noAutofit/></wps:bodyPr>'
+        '</wps:wsp></a:graphicData></a:graphic></wp:anchor></w:drawing></w:r></w:p>'
+    )
+
+
 # -------------------------------------------------------------- el documento
 
 class Documento:
@@ -114,6 +230,8 @@ class Documento:
         for p in list(self.body.findall(qn("w:p"))):
             self.body.remove(p)
         self.anterior = None      # tipo del bloque anterior, para el ritmo vertical
+        self.en_apaisado = False  # hay una seccion apaisada abierta, a la espera de cierre
+        self._emitiendo = False   # dentro de una tabla apaisada: no cerrar la seccion
 
     # --- plumbing
 
@@ -162,6 +280,9 @@ class Documento:
     }
 
     def _ritmo(self, tipo):
+        # cualquier bloque que no sea otra tabla apaisada devuelve el documento a vertical
+        if self.en_apaisado and not self._emitiendo:
+            self._cierra_apaisado()
         if self._NECESITA_BLANCO.get(tipo, lambda a: False)(self.anterior):
             self.blanco()
         self.anterior = tipo
@@ -248,6 +369,10 @@ class Documento:
         self._add(p)
 
     def salto_pagina(self):
+        if self.en_apaisado:
+            # cerrar la seccion apaisada ya parte pagina: un salto mas dejaria una en blanco
+            self._cierra_apaisado()
+            return
         p = self._p([], _rpr(fuente=self.fuente))
         r = OxmlElement("w:r")
         r.append(_rpr(fuente=self.fuente))
@@ -262,21 +387,71 @@ class Documento:
         numpr.append(_e("w:numId", val=num_id))
         return numpr
 
+    # --- secciones apaisadas
+
+    def _parrafo_seccion(self, pgsz):
+        """
+        Parrafo que cierra una seccion. El sectPr se copia del que ya trae el
+        documento y solo se le cambia el tamano de pagina: construido de cero se
+        perderian los margenes, el encabezado con los logos y el pie.
+        """
+        sect = copy.deepcopy(self.sect)
+        ancho, alto = pgsz
+        pgz = sect.find(qn("w:pgSz"))
+        pgz.set(qn("w:w"), str(ancho))
+        pgz.set(qn("w:h"), str(alto))
+        if ancho > alto:
+            pgz.set(qn("w:orient"), "landscape")
+        else:
+            pgz.attrib.pop(qn("w:orient"), None)
+        p = OxmlElement("w:p")
+        ppr = OxmlElement("w:pPr")
+        ppr.append(_rpr(fuente=self.fuente))
+        ppr.append(sect)      # en pPr el sectPr va despues del rPr
+        p.append(ppr)
+        return p
+
+    def _abre_apaisado(self):
+        """Cierra la seccion vertical en curso y abre la apaisada de la tabla."""
+        self._add(self._parrafo_seccion(PGSZ_VERTICAL))
+        for _ in range(BLANCOS_APAISADO):
+            self.blanco()
+        self.en_apaisado = True
+        self.anterior = None
+
+    def _cierra_apaisado(self):
+        """Cierra la seccion apaisada: lo que venga detras vuelve a vertical."""
+        self._emitiendo = True
+        try:
+            for _ in range(BLANCOS_APAISADO):
+                self.blanco()
+            self._add(self._parrafo_seccion(PGSZ_APAISADA))
+        finally:
+            self._emitiendo = False
+        self.en_apaisado = False
+        self.anterior = None
+
     # --- tablas
 
-    def tabla(self, filas, encabezados=(0,), pesos=None, alineaciones=None):
+    def tabla(self, filas, encabezados=(0,), pesos=None, alineaciones=None,
+              orientacion=None):
         """
         filas         lista de listas de celdas (texto, admite **negrita**)
         encabezados   indices de filas con fondo gris y negrita
         pesos         anchos relativos por columna (por defecto, iguales)
         alineaciones  'both'/'center'/'left'/'right' por columna
                       (por defecto la primera justificada y el resto centradas)
+        orientacion   'vertical' u 'horizontal' para mandar sobre el criterio
+                      automatico, que gira la tabla cuando no cabe en vertical
         """
         if not filas:
             return
-        self._ritmo("tabla")
         ncol = max(len(f) for f in filas)
-        pesos = list(pesos or [1] * ncol)[:ncol] + [1] * max(0, ncol - len(pesos or []))
+        # el relleno se mide sobre la lista ya normalizada: medido sobre la de
+        # entrada, una tabla sin anchos explicitos salia con el doble de columnas
+        # y se dibujaba a la mitad de ANCHO_TABLA
+        pesos = list(pesos or [1] * ncol)[:ncol]
+        pesos += [1] * max(0, ncol - len(pesos))
         total = sum(pesos) or ncol
         anchos = [int(ANCHO_TABLA * p / total) for p in pesos]
         anchos[-1] += ANCHO_TABLA - sum(anchos)
@@ -292,10 +467,34 @@ class Documento:
                 if largo < JUSTIFICAR_DESDE:
                     alineaciones[j] = "left"
 
+        if orientacion is None:
+            orientacion = "horizontal" if _no_cabe_vertical(filas, anchos) else "vertical"
+        apaisada = orientacion == "horizontal"
+        if apaisada:
+            anchos = _reparte(anchos, ANCHO_TABLA_APAISADA)
+
+        # una tabla apaisada seguida de otra comparte seccion con ella: _emitiendo
+        # es lo que evita que el ritmo la cierre para volver a abrirla enseguida
+        self._emitiendo = apaisada
+        try:
+            if apaisada and not self.en_apaisado:
+                self._abre_apaisado()
+            self._ritmo("tabla")
+            self._add(self._construye_tabla(filas, encabezados, anchos, alineaciones))
+            if not apaisada:
+                self.blanco()
+        finally:
+            self._emitiendo = False
+        self.anterior = "tabla"
+
+    def _construye_tabla(self, filas, encabezados, anchos, alineaciones):
+        """El w:tbl en si, ya decididos el ancho de cada columna y la alineacion."""
+        ncol = len(anchos)
+        ancho_total = sum(anchos)
         tbl = OxmlElement("w:tbl")
         pr = OxmlElement("w:tblPr")
         pr.append(_e("w:tblStyle", val="TableGrid"))
-        pr.append(_e("w:tblW", w=ANCHO_TABLA, type="dxa"))
+        pr.append(_e("w:tblW", w=ancho_total, type="dxa"))
         pr.append(_e("w:jc", val="center"))
         pr.append(_e("w:tblLayout", type="fixed"))
         look = _e("w:tblLook", val="04A0", firstRow=1, lastRow=0,
@@ -311,8 +510,9 @@ class Documento:
             es_enc = i in encabezados
             tr = OxmlElement("w:tr")
             trpr = OxmlElement("w:trPr")
-            if es_enc and all(k in encabezados for k in range(i + 1)):
-                # solo se repiten al cortar pagina las filas de encabezado de arriba
+            if i == 0:
+                # solo la primera fila se repite al cortar pagina: un encabezado de
+                # bloque intermedio arrastraria su rotulo a paginas que ya van por otro
                 trpr.append(_e("w:tblHeader"))
             trpr.append(_e("w:jc", val="center"))
             tr.append(trpr)
@@ -338,10 +538,33 @@ class Documento:
                     tc.append(p)
                 tr.append(tc)
             tbl.append(tr)
-        self._add(tbl)
-        self.blanco()
-        self.anterior = "tabla"
+        return tbl
+
+    # --- marca de agua
+
+    def marca_borrador(self, texto=TEXTO_MARCA):
+        """
+        Pone la marca de agua de borrador en todos los encabezados. No va por
+        omision: la plantilla no la trae y solo se pone cuando se pide. Si el
+        encabezado ya la tiene no se repite, asi que aplicarla dos veces no deja
+        dos marcas superpuestas.
+        """
+        puestas = 0
+        for parte in self.doc.part.package.iter_parts():
+            if not re.match(r"^/word/header\d*\.xml$", str(parte.partname)):
+                continue
+            hdr = parte.element
+            ids = [el.get("id") for el in hdr.iter(WP_DOCPR)]
+            if ID_MARCA in [el.get("name") for el in hdr.iter(WP_DOCPR)]:
+                continue
+            # el id de la forma tiene que ser unico dentro del encabezado
+            ident = max([int(x) for x in ids if x and x.isdigit()] or [0]) + 1
+            hdr.append(parse_xml(_marca_xml(texto, self.fuente, ident)))
+            puestas += 1
+        return puestas
 
     def guardar(self, ruta):
+        if self.en_apaisado:
+            self._cierra_apaisado()
         self.doc.save(str(ruta))
         return ruta

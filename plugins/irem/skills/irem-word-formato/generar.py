@@ -26,6 +26,7 @@ Marcado que se reconoce:
     \\vertical                deja en vertical la tabla siguiente aunque no quepa
     \\pagina                  salto de pagina
     **negrita** *cursiva*    dentro de cualquier parrafo
+    [texto](url)             hipervinculo, en cuerpo, vinetas, campos y celdas
 
 Los parrafos en blanco de separacion los pone el generador segun el ritmo
 vertical del formato: no hay que escribirlos. La orientacion de cada tabla
@@ -58,13 +59,13 @@ def parte_fila(linea):
 
 
 def solo_negrita(t):
-    ts = [x for x in trozos(t) if x[0].strip()]
-    return bool(ts) and all(neg for _, neg, _ in ts)
+    ts = [x for x in trozos(t) if x.texto.strip()]
+    return bool(ts) and all(x.negrita for x in ts)
 
 
 def solo_cursiva(t):
-    ts = [x for x in trozos(t) if x[0].strip()]
-    return bool(ts) and all(cur for _, _, cur in ts)
+    ts = [x for x in trozos(t) if x.texto.strip()]
+    return bool(ts) and all(x.cursiva for x in ts)
 
 
 def bloques(lineas):

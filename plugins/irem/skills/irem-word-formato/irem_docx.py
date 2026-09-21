@@ -8,6 +8,7 @@ encabezado con los logos mesoamerica MALARIA + BID del documento de referencia.
 Aqui solo se escriben los bloques (titulo, secciones, cuerpo, vinetas, tablas)
 con las propiedades medidas de ese documento.
 """
+from dataclasses import dataclass
 from pathlib import Path
 from xml.sax.saxutils import escape
 import copy
@@ -15,6 +16,7 @@ import re
 
 try:
     from docx import Document
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
     from docx.oxml import OxmlElement, parse_xml
     from docx.oxml.ns import qn
 except ModuleNotFoundError:                       # mensaje util para quien no es tecnico
@@ -36,6 +38,7 @@ PT_CUERPO = 24            # medios puntos: 12 pt
 PT_TABLA = 22             # medios puntos: 11 pt
 IDIOMA = "es-419"
 GRIS_ENCABEZADO = "D9D9D9"
+AZUL_ENLACE = "0563C1"    # el azul de hipervinculo de Word
 ANCHO_TABLA = 9784        # twips; la tabla es mas ancha que la caja de texto y va centrada
 NUM_SECCION = "53"        # numId de la plantilla: numeracion romana I. II. III.
 NUM_VINETA = "36"         # numId de la plantilla: vineta Symbol
@@ -81,7 +84,8 @@ def _e(tag, **attrs):
     return el
 
 
-def _rpr(negrita=False, cursiva=False, pt=PT_CUERPO, color=None, fuente=FUENTE):
+def _rpr(negrita=False, cursiva=False, pt=PT_CUERPO, color=None, fuente=FUENTE,
+         subrayado=False):
     """rPr con la fuente, el tamano y el idioma del formato IREM."""
     rpr = OxmlElement("w:rPr")
     rpr.append(_e("w:rFonts", ascii=fuente, hAnsi=fuente, cs=fuente))
@@ -95,6 +99,8 @@ def _rpr(negrita=False, cursiva=False, pt=PT_CUERPO, color=None, fuente=FUENTE):
         rpr.append(_e("w:color", val=color))
     rpr.append(_e("w:sz", val=pt))
     rpr.append(_e("w:szCs", val=pt))
+    if subrayado:
+        rpr.append(_e("w:u", val="single"))
     rpr.append(_e("w:lang", val=IDIOMA))
     return rpr
 
@@ -109,28 +115,59 @@ def _run(texto, **fmt):
     return r
 
 
-# ------------------------------------------------- texto con negrita/cursiva
+# --------------------------------- texto con negrita, cursiva e hipervinculos
 
-_TROZOS = re.compile(r"(\*\*.+?\*\*|\*[^*]+?\*)", re.S)
+_ENLACE = re.compile(r"\[([^\[\]]*)\]\(([^)\s]+)\)", re.S)
+_TROZOS = re.compile(r"(\[[^\[\]]*\]\([^)\s]+\)|\*\*.+?\*\*|\*[^*]+?\*)", re.S)
 
 
-def trozos(texto):
-    """Parte '**negrita** y *cursiva*' en [(texto, negrita, cursiva), ...]."""
+@dataclass(frozen=True)
+class Trozo:
+    """
+    Un tramo de texto con su formato.
+
+    Es un objeto y no una tupla porque cada atributo nuevo obligaba a tocar a
+    todos los que la abrian: con esto, quien solo mire .texto sigue valiendo.
+    """
+    texto: str
+    negrita: bool = False
+    cursiva: bool = False
+    enlace: str = None
+
+
+def trozos(texto, negrita=False, cursiva=False, enlace=None):
+    """
+    Parte '**negrita**, *cursiva* y [texto](url)' en una lista de Trozo.
+
+    Se llama a si misma para lo que va dentro de cada marca, de modo que las
+    marcas se pueden anidar y '**[texto](url)**' sale en negrita y como enlace.
+    Un corchete que no lleve detras un parentesis no es un enlace: queda tal cual.
+    """
     salida = []
     for parte in _TROZOS.split(texto):
         if not parte:
             continue
-        if parte.startswith("**") and parte.endswith("**") and len(parte) > 4:
-            salida.append((parte[2:-2], True, False))
+        m = _ENLACE.fullmatch(parte)
+        if m:
+            if m.group(1):        # un enlace sin texto visible no se pinta
+                salida.extend(trozos(m.group(1), negrita, cursiva, m.group(2)))
+        elif parte.startswith("**") and parte.endswith("**") and len(parte) > 4:
+            salida.extend(trozos(parte[2:-2], True, cursiva, enlace))
         elif parte.startswith("*") and parte.endswith("*") and len(parte) > 2:
-            salida.append((parte[1:-1], False, True))
+            salida.extend(trozos(parte[1:-1], negrita, True, enlace))
         else:
-            salida.append((parte, False, False))
-    return salida or [("", False, False)]
+            salida.append(Trozo(parte, negrita, cursiva, enlace))
+    return salida or [Trozo("", negrita, cursiva, enlace)]
+
+
+def como_trozo(x):
+    """Acepta un Trozo o la tupla (texto, negrita, cursiva) de antes."""
+    return x if isinstance(x, Trozo) else Trozo(*x)
 
 
 def sin_marcas(texto):
-    return "".join(t for t, _, _ in trozos(texto))
+    """El texto visible: sin las marcas y sin las URL de los enlaces."""
+    return "".join(t.texto for t in trozos(texto))
 
 
 # ------------------------------------------- cuanto ocupa una tabla en la pagina
@@ -254,17 +291,37 @@ class Documento:
         return p
 
     def _texto(self, p, texto, **fmt):
-        # texto puede venir como cadena con marcas **negrita**/*cursiva*
-        # o ya troceado en [(texto, negrita, cursiva), ...]
+        # texto puede venir como cadena con marcas **negrita**/*cursiva*/[t](url)
+        # o ya troceado en una lista de Trozo
         piezas = texto if isinstance(texto, list) else trozos(texto)
-        for t, neg, cur in piezas:
-            if not t:
+        for pieza in piezas:
+            tr = como_trozo(pieza)
+            if not tr.texto:
                 continue
             f = dict(fmt)
-            f["negrita"] = f.get("negrita", False) or neg
-            f["cursiva"] = f.get("cursiva", False) or cur
-            p.append(_run(t, fuente=self.fuente, **f))
+            f["negrita"] = f.get("negrita", False) or tr.negrita
+            f["cursiva"] = f.get("cursiva", False) or tr.cursiva
+            if tr.enlace:
+                p.append(self._enlace(tr.texto, tr.enlace, **f))
+            else:
+                p.append(_run(tr.texto, fuente=self.fuente, **f))
         return p
+
+    def _enlace(self, texto, url, **fmt):
+        """
+        El w:hyperlink con su run dentro, en azul y subrayado.
+
+        La relacion se registra en la part del documento, y python-docx
+        reutiliza la que ya exista para esa URL: dos enlaces al mismo sitio
+        comparten una sola relacion.
+        """
+        fmt = dict(fmt)
+        fmt.pop("color", None)     # el azul del enlace manda sobre el color del bloque
+        h = OxmlElement("w:hyperlink")
+        h.set(qn("r:id"), self.doc.part.relate_to(url, RT.HYPERLINK, is_external=True))
+        h.append(_run(texto, fuente=self.fuente, color=AZUL_ENLACE,
+                      subrayado=True, **fmt))
+        return h
 
     # --- ritmo vertical (cuando va un parrafo en blanco antes del bloque)
 

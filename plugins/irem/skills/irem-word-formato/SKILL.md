@@ -15,7 +15,8 @@ por construcción y no por aproximación.
 ## Regla de oro
 
 **No se toca el contenido, solo el formato.** No se reescribe, no se resume, no
-se corrige el texto. Las negritas y las cursivas se conservan tal como estén.
+se corrige el texto. Las negritas, las cursivas y los hipervínculos se conservan
+tal como estén.
 
 ## La hoja de estilo (medida del documento de referencia)
 
@@ -30,6 +31,7 @@ se corrige el texto. Las negritas y las cursivas se conservan tal como estén.
 | Sección | Numeración romana automática (`I.` `II.` `III.`), negrita, al margen (sin sangría), un espacio entre el número y el texto |
 | Subtítulo de actor | Negrita, al margen |
 | Sub-subtítulo | Cursiva, al margen |
+| Hipervínculo | Texto en azul `0563C1` y subrayado simple, con la fuente y el tamaño del bloque donde va |
 | Viñetas | Viñeta Symbol a 720 twips con francesa de 360, justificadas |
 | Tablas | Calibri 11 pt, centradas, 9784 twips de ancho, rejilla completa, encabezado gris `D9D9D9` en negrita y centrado (en horizontal y en vertical), todas las celdas centradas en vertical, primera columna justificada y el resto centradas. Una columna sin texto largo (menos de 60 caracteres en todas sus celdas) no se justifica: va a la izquierda, para que Word no estire los espacios al partir la celda en dos líneas. Solo la primera fila se repite al cortar página |
 | Tablas anchas | Una tabla que no cabe legible en vertical se gira sola: va en su propia sección apaisada, a 12960 twips, y el documento sigue en vertical después |
@@ -100,6 +102,11 @@ línea es sección, qué línea es subtítulo, qué es viñeta y qué es cuerpo.
 | `\vertical` | Deja en vertical la tabla siguiente aunque no quepa |
 | `\pagina` | Salto de página |
 | `**negrita**`, `*cursiva*` | Dentro de cualquier párrafo |
+| `[texto](url)` | Hipervínculo |
+
+Los hipervínculos valen en cuerpo, viñetas, líneas de campo y celdas de tabla, y
+se combinan con negrita y cursiva en el mismo párrafo. Un corchete que no lleve
+detrás un paréntesis se imprime tal cual.
 
 En las tablas: la primera fila es encabezado; una fila intermedia con todas sus
 celdas en negrita también se pinta como encabezado (sirve para tablas de agenda
@@ -115,6 +122,22 @@ tablas apaisadas seguidas comparten una sola sección.
 
 Una línea que empiece por `\` y no sea una de estas directivas se ignora con un
 aviso por la salida de error, en vez de acabar impresa en el documento.
+
+### Fuentes y enlaces
+
+Todo dato que venga de una fuente externa (cifras, tarifas, requisitos técnicos,
+fechas de vigencia, citas) va con su hipervínculo a la fuente, y la fuente tiene
+que ser primaria y oficial: la documentación del fabricante o del organismo. No
+valen blogs, agregadores ni proveedores que revenden la información. Si un dato
+solo aparece en fuentes de ese segundo tipo, no se escribe: se omite, o se deja
+dicho que hay que confirmarlo contra la fuente oficial.
+
+El enlace va sobre el texto que nombra la fuente, no pegando la URL cruda. En
+las tablas basta una línea de fuente debajo, en vez de enlazar celda por celda.
+
+Esto no obliga a que cada frase lleve enlace: un documento elaborado con
+material propio del equipo (notas de misión, datos del proyecto) no tiene nada
+que citar. La regla aplica a lo que se afirma sobre terceros.
 
 ## Dos cosas en las que el formato se aparta del documento de referencia
 

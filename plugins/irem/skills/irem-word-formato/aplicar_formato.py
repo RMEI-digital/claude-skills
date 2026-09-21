@@ -8,8 +8,8 @@ plantilla.docx. Asi el resultado hereda el encabezado con los logos, los
 margenes, la tipografia y el espaciado del formato, sin arrastrar los estilos
 del documento original.
 
-No cambia el contenido: conserva el texto, las negritas y las cursivas tal
-como estaban. Lo unico que cambia es el formato.
+No cambia el contenido: conserva el texto, las negritas, las cursivas y los
+hipervinculos tal como estaban. Lo unico que cambia es el formato.
 
 Uso:
     uv run --with python-docx python aplicar_formato.py ENTRADA.docx [SALIDA.docx] [--fuente Calibri]
@@ -24,7 +24,7 @@ from docx.text.paragraph import Paragraph
 from docx.oxml.ns import qn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from irem_docx import Documento  # noqa: E402
+from irem_docx import Documento, Trozo  # noqa: E402
 
 # un subtitulo no deberia ser mas largo que esto; si lo es, es cuerpo en negrita
 LARGO_MAX_TITULO = 120
@@ -45,9 +45,29 @@ def marca(rpr, tag):
     return n is not None and n.get(qn("w:val")) not in ("0", "false")
 
 
+def url_de(r, part):
+    """
+    La URL del hipervinculo que envuelve al run, si lo hay.
+
+    El w:r de un enlace no cuelga del w:p sino de un w:hyperlink, que solo
+    guarda el r:id de una relacion del documento de entrada. Sin resolverla
+    contra ese documento, el enlace se perderia al reescribirlo. Un enlace
+    interno (a un marcador del propio documento) no lleva r:id y se queda en
+    texto normal.
+    """
+    el = r.getparent()
+    while el is not None and el.tag != qn("w:p"):
+        if el.tag == qn("w:hyperlink"):
+            rid = el.get(qn("r:id"))
+            rel = part.rels.get(rid) if rid else None
+            return rel.target_ref if rel is not None and rel.is_external else None
+        el = el.getparent()
+    return None
+
+
 def runs_de(p):
     """
-    [(texto, negrita, cursiva), ...] con las marcas heredadas del estilo.
+    Lista de Trozo con las marcas heredadas del estilo y la URL de los enlaces.
 
     Recorre todos los w:r del parrafo, no solo los hijos directos, para no
     perder el texto que va dentro de hipervinculos, smartTags o controles de
@@ -65,10 +85,23 @@ def runs_de(p):
         if not texto:
             continue
         rpr = r.find(qn("w:rPr"))
-        salida.append((texto,
-                       marca(rpr, "b") or neg_est,
-                       marca(rpr, "i") or cur_est))
+        salida.append(Trozo(texto,
+                            marca(rpr, "b") or neg_est,
+                            marca(rpr, "i") or cur_est,
+                            url_de(r, p.part)))
     return salida
+
+
+def texto_de(runs):
+    """
+    El texto de unos runs, con los enlaces escritos como [texto](url).
+
+    La tabla recibe cada celda como cadena y vuelve a leer el marcado al
+    escribirla: reemitir la sintaxis de Markdown es lo que hace que un enlace
+    dentro de una celda siga vivo despues del reformateo.
+    """
+    return "".join(f"[{t.texto}]({t.enlace})" if t.enlace else t.texto
+                   for t in runs)
 
 
 def props(p):
@@ -99,7 +132,7 @@ def nivel_de_estilo(nombre):
 
 
 def clasifica(p, d, runs, primero):
-    texto = "".join(t for t, _, _ in runs).strip()
+    texto = "".join(t.texto for t in runs).strip()
     if not texto:
         return "salto" if d["salto"] else "vacio"
 
@@ -107,8 +140,8 @@ def clasifica(p, d, runs, primero):
     if por_estilo:
         return por_estilo
 
-    negs = {b for _, b, _ in runs}
-    curs = {i for _, _, i in runs}
+    negs = {t.negrita for t in runs}
+    curs = {t.cursiva for t in runs}
     corto = len(texto) <= LARGO_MAX_TITULO
 
     if d["num"]:
@@ -123,7 +156,7 @@ def clasifica(p, d, runs, primero):
     if curs == {True} and corto:
         return "h3"
     # "Etiqueta: valor" con la etiqueta en negrita
-    if runs and runs[0][1] and not all(negs) and ":" in runs[0][0]:
+    if runs and runs[0].negrita and not all(negs) and ":" in runs[0].texto:
         return "campo"
     return "cuerpo"
 
@@ -135,7 +168,7 @@ def celdas_de(tabla):
         for cell in row.cells:
             partes = []
             for p in cell.paragraphs:
-                t = "".join(t for t, _, _ in runs_de(p)).strip()
+                t = texto_de(runs_de(p)).strip()
                 if t:
                     partes.append(t)
             fila.append("\n".join(partes))
@@ -159,10 +192,10 @@ def es_fila_encabezado(tabla, i):
         if relleno in (None, "auto", "FFFFFF"):
             sombreada = False
         for p in cell.paragraphs:
-            for t, b, _ in runs_de(p):
-                if t.strip():
+            for t in runs_de(p):
+                if t.texto.strip():
                     hay_texto = True
-                    if not b:
+                    if not t.negrita:
                         negrita = False
     return hay_texto and (sombreada or negrita)
 
@@ -222,9 +255,7 @@ def reformatea(entrada, salida, fuente):
             doc.salto_pagina()
             continue
         if papel == "campo":
-            corte = runs[0][0]
-            resto = [(t, b_, i_) for t, b_, i_ in runs[1:]]
-            doc.campo(corte, resto)
+            doc.campo(runs[0].texto, list(runs[1:]))
         else:
             getattr(doc, papel)(runs)
         if papel != "titulo":

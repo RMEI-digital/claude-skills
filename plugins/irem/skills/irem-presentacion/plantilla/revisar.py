@@ -24,6 +24,11 @@ import sys
 from pathlib import Path
 
 TOPE_PALABRAS = 40
+#  La presentación resumen no lleva notas: lo que en una charla va al guion,
+#  aquí tiene que estar en pantalla. Medido en las dos que dieron origen al
+#  tipo, la lámina más cargada tenía 56 palabras y se aprobó así.
+TOPE_PALABRAS_RESUMEN = 60
+TOPE_LAMINAS_RESUMEN = 6
 TOPE_VINETAS = 4
 TOPE_CARACTERES_VINETA = 118  # unos dos renglones a 10 pt en 137.6 mm
 MIN_LAMINAS_POR_SECCION = 2   # menos que esto y la sección no se gana su portadilla
@@ -48,7 +53,14 @@ ESPINA = [
 ]
 
 # Comandos del formato cuyo texto SÍ se proyecta y por lo tanto cuenta.
-CMD_CON_TEXTO = r"\\(?:numerado|concepto|realce|ideaGrande|pregunta|cifra|panelDerecho)"
+CMD_CON_TEXTO = r"\\(?:numerado|concepto|realce|ideaGrande|pregunta|cifra|panelDerecho|filaIcono)"
+
+
+def tipo_de(texto):
+    """El campo `tipo` del encabezado: hoy solo importa si es `resumen`."""
+    m = re.match(r"^---\n(.*?)\n---\n", texto, re.S)
+    t = re.search(r"^tipo:\s*[\"']?([a-záéíóú]+)", m.group(1), re.M) if m else None
+    return t.group(1) if t else None
 
 
 def laminas(cuerpo):
@@ -88,6 +100,8 @@ def revisar_contenido(qmd):
     partes = s.split("---", 2)
     cuerpo = partes[2] if len(partes) > 2 else s
     fallos, avisos = [], []
+    resumen = tipo_de(s) == "resumen"
+    tope = TOPE_PALABRAS_RESUMEN if resumen else TOPE_PALABRAS
 
     secciones = [t for n, t, _ in laminas(cuerpo) if n == 1]
     # Qué páginas del PDF llevan cintilla: esa sí baja a la banda del pie, por
@@ -119,8 +133,22 @@ def revisar_contenido(qmd):
         if "{.notes}" in cont or "\\note{" in cont:
             con_nota += 1
         n = palabras(vis, en_latex)
-        if n > TOPE_PALABRAS and "tablaIrem" not in cont:
-            fallos.append(f"«{titulo[:40]}»: {n} palabras (tope {TOPE_PALABRAS})")
+        if n > tope and "tablaIrem" not in cont:
+            fallos.append(f"«{titulo[:40]}»: {n} palabras (tope {tope})")
+        # Cabecera de tabla en mayúsculas: va en tipo oración, «Componente» y
+        # no «COMPONENTE». Se pidió corregir en una presentación real.
+        for cab in re.findall(r"\\ch\{([^{}]*)\}", cont):
+            letras = [c for c in cab if c.isalpha()]
+            if len(letras) > 3 and all(c.isupper() for c in letras):
+                fallos.append(f"«{titulo[:40]}»: cabecera «{cab[:30]}» en mayúsculas; "
+                              f"va en tipo oración")
+                break
+        # Las fuentes no van en la lámina: van enlazadas en el documento de
+        # contenido o en las notas del presentador.
+        if re.search(r"\bFuentes?\s*:", vis + " " + en_latex) or re.search(
+                r"\\notaPie\{\s*Fuentes?\b", cont):
+            avisos.append(f"«{titulo[:40]}»: lleva la fuente en la lámina; va en el "
+                          f"documento de contenido o en las notas")
         vin = [l for l in vis.split("\n") if re.match(r"^\s*[-*] ", l)]
         if len(vin) > TOPE_VINETAS:
             fallos.append(f"«{titulo[:40]}»: {len(vin)} viñetas (tope {TOPE_VINETAS})")
@@ -154,8 +182,12 @@ def revisar_contenido(qmd):
     for m in re.findall(r"\[[^\]\n]{6,}\]", limpio):
         fallos.append(f"marcador sin resolver: {m}")
 
-    if total and con_nota / total < 0.5:
+    # La presentación resumen va sin notas a propósito: se entiende sola.
+    if total and con_nota / total < 0.5 and not resumen:
         avisos.append(f"solo {con_nota} de {total} láminas tienen nota del presentador")
+    if resumen and total > TOPE_LAMINAS_RESUMEN:
+        avisos.append(f"{total} láminas de contenido para una presentación resumen "
+                      f"(se espera entre 4 y {TOPE_LAMINAS_RESUMEN})")
 
     # Portadillas que no se ganan su lugar.
     for nombre, n in por_seccion.items():
@@ -173,9 +205,11 @@ def revisar_contenido(qmd):
         fallos.append(f"{max_seguidas} láminas de una sola frase seguidas")
 
     # Cuánto del deck va casi en blanco: portada + portadillas + despliegue + cierre.
+    # En una presentación resumen no se cuenta: con cinco láminas, la portada
+    # sola ya pasa del tope.
     paginas = 1 + len(secciones) + total
     vacias = len(secciones) + display + 1
-    if paginas and vacias / paginas > TOPE_VACIAS:
+    if paginas and vacias / paginas > TOPE_VACIAS and not resumen:
         avisos.append(
             f"por estructura, {vacias} de {paginas} láminas llevarían una frase o menos; "
             f"la cuenta buena es la de tinta, más abajo")
@@ -278,7 +312,7 @@ def revisar_formato(pdf, con_cintilla=()):
     return len(pngs), fallos
 
 
-def revisar_pptx(pptx, qmd_laminas):
+def revisar_pptx(pptx, qmd_laminas, resumen=False):
     """Revisa el .pptx sin renderizarlo.
 
     No sustituye mirar el archivo en PowerPoint, pero sí caza lo que se ve mal
@@ -409,7 +443,7 @@ def revisar_pptx(pptx, qmd_laminas):
     n = len(prs.slides._sldIdLst)
     if qmd_laminas and n != qmd_laminas:
         fallos.append(f"el .pptx tiene {n} láminas y el .qmd describe {qmd_laminas}")
-    if n and con_nota / n < 0.5:
+    if n and con_nota / n < 0.5 and not resumen:
         avisos.append(f"solo {con_nota} de {n} láminas llevan nota en el panel "
                       f"de notas de PowerPoint")
     return n, fallos, avisos
@@ -446,9 +480,14 @@ def main():
         espina, donde = en_titulos, "títulos"
     else:
         espina, donde = secciones, "portadillas"
-    externa = bool(set(ESPINA) & set(espina))
+    # Hacen falta dos secciones de la espina para tomarla por propuesta: con
+    # una sola, cualquier deck que cierre con «Siguientes pasos» saltaba como
+    # propuesta incompleta. La presentación resumen no lleva espina.
+    resumen = tipo_de(qmd.read_text()) == "resumen"
+    externa = len(set(ESPINA) & set(espina)) >= 2 and not resumen
 
-    print(f"\n{qmd.name}   {total} láminas, {con_nota} con nota")
+    print(f"\n{qmd.name}   {total} láminas, {con_nota} con nota"
+          + ("   (tipo resumen: sin notas, a propósito)" if resumen else ""))
     print(f"espina (en {donde}): {' → '.join(espina) if espina else '(ninguna)'}")
 
     if externa and espina != ESPINA:
@@ -494,7 +533,7 @@ def main():
     pptx = qmd.with_suffix(".pptx")
     if pptx.exists():
         print("\nPOWERPOINT")
-        n_ppt, fallos_p, avisos_p = revisar_pptx(pptx, esperadas)
+        n_ppt, fallos_p, avisos_p = revisar_pptx(pptx, esperadas, resumen)
         for f in fallos_p:
             print(f"  !! {f}")
         for a in avisos_p:

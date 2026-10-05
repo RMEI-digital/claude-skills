@@ -149,7 +149,24 @@
 %%  propio margen justo antes de que el entorno monte la lista, que es el
 %%  único momento en que \leftmargini todavía se lee.
 \AtBeginEnvironment{enumerate}{\setlength{\leftmargini}{5mm}}
-\AtBeginEnvironment{itemize}{\setlength{\leftmargini}{0mm}}
+\AtBeginEnvironment{itemize}{%
+  \ifdefined\iremConVinetas\setlength{\leftmargini}{5mm}\else\setlength{\leftmargini}{0mm}\fi}
+
+%%  Viñeta verde en el primer nivel, opcional. El master no la lleva, pero la
+%%  presentación resumen sí (`tipo: resumen`), y cualquier otra la enciende con
+%%  `vinetas: true` en el encabezado. Lo traduce `irem.lua`, que define
+%%  \iremConVinetas; se pregunta en \AtBeginDocument y no al cargar este
+%%  archivo porque no hay garantía de en qué orden llegan los dos al preámbulo.
+%%
+%%  Con viñeta, el texto entra 5 mm, igual que en una lista numerada, y el
+%%  punto queda en medio. Así lo compone también el PowerPoint. La alternativa,
+%%  dejar el texto al ras del título y colgar el punto en el margen, separaba
+%%  las dos salidas: en el PDF el punto quedaba a 9.3 mm del borde y en el
+%%  PowerPoint el texto entraba igual.
+\AtBeginDocument{%
+  \ifdefined\iremConVinetas
+    \setbeamertemplate{itemize item}{\tikz[baseline=-0.55ex]\fill[iremverde] (0,0) circle (0.5mm);}%
+  \fi}
 
 %%  El aire entre puntos hay que meterlo parcheando \itemize, no por plantilla.
 %%  Comprobado midiendo el PNG: con
@@ -515,6 +532,28 @@
   \end{tcolorbox}%
 }
 
+%% --- Filas con ícono -------------------------------------------------------
+%%  \filaIcono{iconos/vigilancia.png}{Una frase de uno o dos renglones}
+%%
+%%  No sale del master: viene de las presentaciones resumen, donde la lámina
+%%  de contexto lleva tres de estas en vez de tres viñetas. El ícono es un
+%%  pictograma blanco en un círculo verde, y lo fabrica `iconos.py`.
+%%
+%%  9 mm de ícono, 4 de aire y el resto del área de texto para la frase (124.6
+%%  de 137.6 mm). Con una caja más angosta, una frase que en el PDF cabía justo
+%%  en un renglón PowerPoint la partía en dos. Las dos cajas van centradas
+%%  entre sí, así que una frase de dos renglones queda a la altura del ícono y
+%%  no colgando de él.
+%%
+%%  Va aquí y no en el .qmd por una razón concreta: un \newcommand escrito
+%%  dentro de una lámina rompe Beamer, y el PDF sale con menos láminas de las
+%%  que tiene el .qmd sin ningún error a la vista.
+\newcommand{\filaIcono}[2]{%
+  \par\noindent
+  \begin{minipage}[c]{9mm}\includegraphics[width=9mm]{#1}\end{minipage}\hspace{4mm}%
+  \begin{minipage}[c]{\dimexpr\linewidth-13mm\relax}\raggedright\fontsize{10}{14.5}\selectfont\color{grisoscuro}#2\end{minipage}%
+  \par\vspace{4mm}}
+
 %% --- Nota al pie de lámina -------------------------------------------------
 %%  El master remata sus láminas de tabla y de gráfico con una nota en gris
 %%  de 10.5 pt (→ 5, aquí 7). Es donde van los denominadores y las salvedades.
@@ -576,6 +615,32 @@
 %%  Celda con la escala de calor que declara la lámina 16 del master.
 %%  \celdaCalor{bajo|medio|alto}{texto}
 \newcommand{\celdaCalor}[2]{\cellcolor{calor#1}#2}
+
+%%  Tabla con todos los bordes: no hace falta otro entorno. Basta con poner
+%%  barras en la especificación y un \hline al final de cada fila:
+%%
+%%    \begin{tablaIrem}{|m{32mm}|m{43mm}|m{45mm}|}
+%%    \ch{Componente} & \ch{Hoy} & \ch{Al transferir} \\ \hline
+%%    ...
+%%
+%%  El color de los filetes ya es el gris de apoyo (\arrayrulecolor, arriba).
+%%  El generador de PowerPoint mira esas mismas barras para dibujar los bordes.
+
+%%  Logo de una herramienta a la izquierda del texto de la celda:
+%%    \logoFila{iconos/logo-github.png}{Código (GitHub)}
+%%    \logoFila{iconos/logo-powerbi.png,iconos/logo-tableau.png}{Tablero}
+%%  Con varios logos separados por coma, van apilados. El texto va en su propia
+%%  caja al lado del logo: puesto en línea, un texto de dos renglones se metía
+%%  por debajo del logo y partía palabras («Hero-ku»). Los logos los baja
+%%  `iconos.py marca`.
+\newcommand{\iremLogoUno}[1]{\iremSepLogo\includegraphics[width=3.5mm]{#1}\par
+  \def\iremSepLogo{\vspace{0.8mm}}}
+\newcommand{\logoFila}[2]{%
+  \begin{minipage}[c]{3.5mm}\def\iremSepLogo{}\forcsvlist{\iremLogoUno}{#1}\end{minipage}%
+  \hspace{1.5mm}%
+  \begin{minipage}[c]{\dimexpr\linewidth-5mm\relax}%
+    \raggedright\hyphenpenalty=10000\exhyphenpenalty=10000\relax #2%
+  \end{minipage}}
 
 %% --- Cintillas opcionales --------------------------------------------------
 %%  La portada ya trae la cintilla de donantes. Estas dos son para cuando el

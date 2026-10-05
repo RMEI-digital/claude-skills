@@ -118,6 +118,32 @@ CONC_W, CONC_H = 66 * K, 20 * K
 CONC_AIRE = 4 * K
 CONC_FILETE = 1.4 * K
 
+#  Filas con ícono (\filaIcono): 9 mm de ícono, 4 de aire y el resto del ancho
+#  para el texto. Medido en el PDF: el primer ícono arranca 3.95 mm por encima
+#  del primer renglón del cuerpo, y entre el pie de una fila y el ícono de la
+#  siguiente hay 6.3 mm.
+ICONO = 9 * K
+ICONO_TEXTO_X = 13 * K
+ICONO_TEXTO_W = CUERPO_W - ICONO_TEXTO_X
+ICONO_ARRIBA = 3.95 * K
+ICONO_AIRE = 6.3 * K
+
+#  Logos en la primera columna de una tabla (\logoFila): 3.5 mm de lado, 1.5 de
+#  aire hasta el texto y 0.8 entre dos logos apilados.
+LOGO_TABLA = 3.5 * K
+LOGO_TABLA_AIRE = 1.5 * K
+LOGO_TABLA_ENTRE = 0.8 * K
+
+#  Tabla con todos los bordes: el filete es el gris de apoyo de 0.75 pt, y cada
+#  celda lleva 0.8 mm de aire arriba y abajo para que el texto no toque la raya.
+BORDE_PT = 0.75
+AIRE_CELDA = 0.8
+
+#  Viñeta verde en el primer nivel. Apagada como en el master; la enciende
+#  `tipo: resumen` o `vinetas: true` en el encabezado (ver main).
+VINETAS = False
+SANGRIA_LISTA = 5.0 * K
+
 # --- Escala tipográfica -----------------------------------------------------
 #  PDF x K = el punto que declara `irem.tex`, multiplicado por el factor de
 #  lienzo. Donde dice «master», ese número coincide con el que el master aplica
@@ -314,12 +340,23 @@ def tramos(texto):
     return [(t, f) for t, f in salida if t] or [("", {})]
 
 
-def limpiar_latex(s):
-    """Lo que un texto de LaTeX trae y en PowerPoint no va."""
+def limpiar_latex(s, marcas=False):
+    """Lo que un texto de LaTeX trae y en PowerPoint no va. Con `marcas`, la
+    negrita y la cursiva se pasan a la sintaxis de Markdown para que `tramos`
+    las conserve: en una celda, el nombre de una especie va en cursiva."""
     s = s.replace("\\%", "%").replace("\\&", "&").replace("\\_", "_")
     s = s.replace("~", " ").replace("\\\\", "\n")
-    s = re.sub(r"\\(?:textbf|textit|emph)\{([^{}]*)\}", r"\1", s)
+    if marcas:
+        s = re.sub(r"\\textbf\{([^{}]*)\}", r"**\1**", s)
+        s = re.sub(r"\\(?:textit|emph)\{([^{}]*)\}", r"*\1*", s)
+    else:
+        s = re.sub(r"\\(?:textbf|textit|emph)\{([^{}]*)\}", r"\1", s)
     return s.strip()
+
+
+def sin_marcas(s):
+    """El texto tal como se ve, para medirlo: sin los asteriscos de énfasis."""
+    return re.sub(r"\*+|`", "", s)
 
 
 def argumentos(cadena, pos):
@@ -349,7 +386,9 @@ def parsear_tabla_latex(bloque):
         return None
     spec, pos = argumentos(bloque, m.end())
     fin = bloque.find("\\end{tablaIrem}", pos)
-    cuerpo = bloque[pos:fin]
+    # Los \hline de una tabla con bordes no son celdas: sin quitarlos, el
+    # primero de cada fila se pega al texto de la celda siguiente.
+    cuerpo = re.sub(r"\\hline|\\cline\{[^}]*\}", "", bloque[pos:fin])
     filas = []
     for linea in re.split(r"\\\\", cuerpo):
         if not linea.strip():
@@ -357,7 +396,7 @@ def parsear_tabla_latex(bloque):
         celdas = []
         for celda in linea.split("&"):
             celda = celda.strip()
-            calor = None
+            calor, logos = None, ()
             c = re.search(r"\\celdaCalor", celda)
             if c:
                 args, _ = argumentos(celda, c.end())
@@ -367,9 +406,20 @@ def parsear_tabla_latex(bloque):
             if ch:
                 args, _ = argumentos(celda, ch.end())
                 celda = args[0] if args else celda
-            celdas.append((limpiar_latex(celda), calor))
+            lf = re.search(r"\\logoFila", celda)
+            if lf:
+                args, _ = argumentos(celda, lf.end())
+                if len(args) == 2:
+                    logos = tuple(r.strip() for r in args[0].split(",") if r.strip())
+                    celda = args[1]
+            celdas.append((limpiar_latex(celda, marcas=True), calor, logos))
         filas.append(celdas)
-    return {"spec": spec[0] if spec else "l", "filas": filas}
+    spec = spec[0] if spec else "l"
+    return {"spec": spec, "filas": filas,
+            # Barras en la especificación: la tabla lleva todos los bordes.
+            "bordes": "|" in spec,
+            # Sin \begin{center}, el PDF la pone al ras del margen izquierdo.
+            "centrada": "\\begin{center}" in bloque}
 
 
 def columnas_de_spec(spec):
@@ -398,9 +448,9 @@ def parsear_tabla_markdown(lineas):
             alin = ["c" if c.startswith(":") and c.endswith(":")
                     else "r" if c.endswith(":") else "l" for c in celdas]
             continue
-        filas.append([(c, None) for c in celdas])
+        filas.append([(c, None, ()) for c in celdas])
     cols = [(a, None) for a in alin] or [("l", None)] * len(filas[0])
-    return {"spec": None, "filas": filas, "cols": cols}
+    return {"spec": None, "filas": filas, "cols": cols, "centrada": True}
 
 
 def parsear_lamina(cont):
@@ -439,6 +489,14 @@ def parsear_latex(bruto):
     if tabla:
         tabla["cols"] = columnas_de_spec(tabla["spec"])
         bloques.append(("tabla", tabla))
+
+    filas_icono = []
+    for m in re.finditer(r"\\filaIcono", bruto):
+        args, _ = argumentos(bruto, m.end())
+        if len(args) == 2:
+            filas_icono.append((args[0].strip(), limpiar_latex(args[1], marcas=True)))
+    if filas_icono:
+        bloques.append(("filas_icono", filas_icono))
 
     nums = []
     for m in re.finditer(r"\\numerado", bruto):
@@ -693,21 +751,23 @@ def estilo_tabla(tabla):
     tp.append(e)
 
 
-def filete(celda, lado="B", color=GRIS_CLARO, grosor=0.15):
-    """Filete horizontal fino y gris, y ninguno vertical. Va antes que el
-    relleno porque en `a:tcPr` los bordes van primero; al revés, PowerPoint
-    descarta el archivo."""
+def filetes(celda, lados, color=GRIS_CLARO, grosor=0.15):
+    """Filetes de una celda, en puntos de grosor. Van antes que el relleno y en
+    este orden, izquierdo, derecho, arriba, abajo, porque así lo exige `a:tcPr`:
+    en otro orden, o detrás del relleno, PowerPoint descarta el archivo. Por eso
+    se ponen todos los de la celda de una vez."""
     tc = celda._tc.get_or_add_tcPr()
-    ln = tc.makeelement(qn(f"a:ln{lado}"), {"w": str(int(grosor * 12700)), "cap": "flat",
-                                            "cmpd": "sng", "algn": "ctr"})
-    fill = ln.makeelement(qn("a:solidFill"), {})
-    srgb = fill.makeelement(qn("a:srgbClr"), {"val": str(color)})
-    fill.append(srgb)
-    ln.append(fill)
-    tc.insert(0, ln)
+    for lado in reversed([l for l in "LRTB" if l in lados]):
+        ln = tc.makeelement(qn(f"a:ln{lado}"), {"w": str(int(grosor * 12700)), "cap": "flat",
+                                                "cmpd": "sng", "algn": "ctr"})
+        fill = ln.makeelement(qn("a:solidFill"), {})
+        srgb = fill.makeelement(qn("a:srgbClr"), {"val": str(color)})
+        fill.append(srgb)
+        ln.append(fill)
+        tc.insert(0, ln)
 
 
-def poner_tabla(lamina, datos, y):
+def poner_tabla(lamina, datos, y, base=Path(".")):
     """Tabla del formato: cabecera azul con texto gris suave en negrita, cuerpo
     sin relleno. El ancho de cada columna sale del contenido, como en el PDF,
     para que la tabla no se estire a todo lo ancho cuando no hace falta."""
@@ -720,20 +780,29 @@ def poner_tabla(lamina, datos, y):
     # Filetes: `tablaIrem` no lleva ninguno (su separación es la banda azul y el
     # aire), y una tabla de Markdown lleva los tres de booktabs, que es como la
     # compone pandoc en el PDF. Se distingue por el `spec`, que solo trae la de
-    # LaTeX.
+    # LaTeX. Si el `spec` trae barras, la tabla lleva todos los bordes.
     booktabs = datos.get("spec") is None
+    con_bordes = datos.get("bordes", False)
 
     relleno = 2.4 * K * 2      # el tabcolsep del PDF, a los dos lados
+    # Lo que ocupan los logos de \logoFila: el texto de esa celda va a su derecha.
+    hueco = LOGO_TABLA + LOGO_TABLA_AIRE
+    con_logo = lambda celda: bool(celda[2])
     anchos = []
     for c in range(n_col):
         fijo = cols[c][1]
         if fijo:
-            anchos.append(fijo * K)
+            # m{50mm} son 50 mm de texto MÁS el tabcolsep de los dos lados: así
+            # lo compone el PDF. Sin el relleno, la columna sale más angosta
+            # que en el PDF y el texto se parte en otro sitio.
+            anchos.append(fijo * K + relleno)
             continue
         ancho = 0.0
         for fi, fila in enumerate(filas):
             if c < len(fila):
-                ancho = max(ancho, MET.ancho_mm(fila[c][0], PT_TABLA, negrita=(fi == 0)))
+                ancho = max(ancho, MET.ancho_mm(sin_marcas(fila[c][0]), PT_TABLA,
+                                                negrita=(fi == 0))
+                            + (hueco if con_logo(fila[c]) else 0))
         # Un 2 % de holgura más un milímetro: PowerPoint decide el corte de
         # línea con un poco más de aire que la medición, y sin esto una
         # cabecera que cabía justo se parte en dos renglones.
@@ -742,9 +811,12 @@ def poner_tabla(lamina, datos, y):
     if total > CUERPO_W:                      # no cabe: se encoge proporcional
         anchos = [a * CUERPO_W / total for a in anchos]
         total = CUERPO_W
-    x = CUERPO_X + (CUERPO_W - total) / 2     # centrada, como el \begin{center}
+    # Centrada si el .qmd la pone en \begin{center}, como el PDF; si no, al ras
+    # del margen izquierdo, que es donde la deja el PDF.
+    x = CUERPO_X + (CUERPO_W - total) / 2 if datos.get("centrada", True) else CUERPO_X
 
     alto_fila = PT_TABLA * 1.2 * 1.45 * 25.4 / 72.0    # arraystretch del PDF
+    aire = 2 * AIRE_CELDA if con_bordes else 0.0
     forma = lamina.shapes.add_table(len(filas), n_col, Mm(x), Mm(y),
                                     Mm(total), Mm(alto_fila * len(filas)))
     tabla = forma.table
@@ -752,40 +824,65 @@ def poner_tabla(lamina, datos, y):
     for c, a in enumerate(anchos):
         tabla.columns[c].width = Mm(a)
     alto_total = 0.0
+    logos_por_poner = []
     for fi, fila in enumerate(filas):
-        lineas = 1
+        lineas, alto_logos = 1, 0.0
         for c in range(n_col):
             if c < len(fila):
-                lineas = max(lineas, MET.lineas(fila[c][0], PT_TABLA,
-                                                anchos[c] - relleno, fi == 0))
-        alto = alto_fila * lineas
+                util = anchos[c] - relleno - (hueco if con_logo(fila[c]) else 0)
+                lineas = max(lineas, MET.lineas(sin_marcas(fila[c][0]), PT_TABLA,
+                                                util, fi == 0))
+                n = len(fila[c][2])
+                if n:
+                    alto_logos = max(alto_logos,
+                                     n * LOGO_TABLA + (n - 1) * LOGO_TABLA_ENTRE + 1.0 * K)
+        alto = max(alto_fila * lineas, alto_logos) + aire
         tabla.rows[fi].height = Mm(alto)
-        alto_total += alto
         for c in range(n_col):
             celda = tabla.cell(fi, c)
-            celda.margin_left = celda.margin_right = Mm(2.4 * K)
-            celda.margin_top = celda.margin_bottom = 0
+            texto, calor, logos = fila[c] if c < len(fila) else ("", None, ())
+            celda.margin_left = Mm(2.4 * K + (hueco if logos else 0))
+            celda.margin_right = Mm(2.4 * K)
+            celda.margin_top = celda.margin_bottom = Mm(AIRE_CELDA) if con_bordes else 0
             celda.vertical_anchor = MSO_ANCHOR.MIDDLE
-            if booktabs:
-                if fi == 0:
-                    filete(celda, "T")
-                if fi in (0, len(filas) - 1):
-                    filete(celda, "B")
+            if con_bordes:
+                filetes(celda, "LRTB", grosor=BORDE_PT)
+            elif booktabs:
+                lados = ("T" if fi == 0 else "") + ("B" if fi in (0, len(filas) - 1) else "")
+                if lados:
+                    filetes(celda, lados)
             if fi == 0:
                 celda.fill.solid()
                 celda.fill.fore_color.rgb = AZUL
             else:
                 celda.fill.background()
-            texto, calor = fila[c] if c < len(fila) else ("", None)
             if calor and calor in CALOR:
                 celda.fill.solid()
                 celda.fill.fore_color.rgb = CALOR[calor]
+            if logos:
+                # Centrados en la altura de la fila, apilados si son varios.
+                alto_l = len(logos) * LOGO_TABLA + (len(logos) - 1) * LOGO_TABLA_ENTRE
+                yl = y + alto_total + (alto - alto_l) / 2
+                for ruta in logos:
+                    logos_por_poner.append((ruta, x + sum(anchos[:c]) + 2.4 * K, yl))
+                    yl += LOGO_TABLA + LOGO_TABLA_ENTRE
             p = celda.text_frame.paragraphs[0]
             alin = cols[c][0]
             p.alignment = {"r": PP_ALIGN.RIGHT, "c": PP_ALIGN.CENTER}.get(alin, PP_ALIGN.LEFT)
             escribir(p, texto, PT_TABLA,
                      color=GRIS_SUAVE if fi == 0 else GRIS_OSCURO,
                      negrita=(fi == 0))
+        alto_total += alto
+    # Los logos van encima de la tabla, como imágenes sueltas: una celda de
+    # PowerPoint no admite imagen y texto a la vez.
+    for ruta, xl, yl in logos_por_poner:
+        archivo = Path(ruta) if Path(ruta).is_absolute() else base / ruta
+        if not archivo.exists():
+            print(f"  aviso: no encuentro el logo {ruta}")
+            continue
+        f = lamina.shapes.add_picture(str(archivo), Mm(xl), Mm(yl),
+                                      Mm(LOGO_TABLA), Mm(LOGO_TABLA))
+        f.name = "logo-" + archivo.stem
     return y + alto_total
 
 
@@ -925,13 +1022,21 @@ def poner_gracias(lamina, texto, logos):
 
 def poner_punteos(lamina, items, y, ancho=None, pt=None):
     """Punteos y listas numeradas. Primer nivel al ras y sin viñeta, segundo
-    con punto gris; lo que separa un punto del siguiente es el aire."""
+    con punto gris; lo que separa un punto del siguiente es el aire. Con
+    VINETAS, el primer nivel lleva el punto verde y entra 5 mm, como la lista
+    numerada y como el PDF."""
     ancho = ancho or CUERPO_W
     pt = pt or PT_CUERPO
+
+    def sangria(nivel, numerada):
+        if nivel:
+            return 6.0 * K
+        return SANGRIA_LISTA if (numerada or VINETAS) else 0.0
+
     alto = 0.0
-    for nivel, _, texto in items:
-        alto += MET.alto_mm(texto, pt if nivel == 0 else PT_CUERPO2,
-                            ancho - (6.0 * K if nivel else 0), LS_LISTA)
+    for nivel, numerada, texto in items:
+        alto += MET.alto_mm(sin_marcas(texto), pt if nivel == 0 else PT_CUERPO2,
+                            ancho - sangria(nivel, numerada), LS_LISTA)
     alto += SP_PUNTOS.pt * (len(items) - 1) * 25.4 / 72.0
     tb = caja(lamina, CUERPO_X, y - AIRE_PRIMERA_LINEA, ancho, max(alto + 4, 10))
     tf = tb.text_frame
@@ -941,13 +1046,42 @@ def poner_punteos(lamina, items, y, ancho=None, pt=None):
         if i:
             p.space_before = SP_PUNTOS
         if numerada:
-            con_numero(p, 5.0 * K)
+            con_numero(p, SANGRIA_LISTA)
         elif nivel:
             con_vineta(p, 6.0 * K)
+        elif VINETAS:
+            con_vineta(p, SANGRIA_LISTA, color=VERDE)
         else:
             sin_vineta(p)
         escribir(p, texto, pt if nivel == 0 else PT_CUERPO2)
     return y + alto
+
+
+def poner_filas_icono(lamina, filas, y, base):
+    """\\filaIcono: ícono a la izquierda y texto a su lado, centrados entre sí,
+    como las dos minipage del PDF. Una fila de dos renglones es más alta que el
+    ícono, y empuja a la siguiente lo que crece."""
+    arriba = y - ICONO_ARRIBA
+    for ruta, texto in filas:
+        alto_t = MET.alto_mm(sin_marcas(texto), PT_CUERPO, ICONO_TEXTO_W, LS_CUERPO)
+        alto = max(ICONO, alto_t)
+        centro = arriba + alto / 2
+        archivo = Path(ruta) if Path(ruta).is_absolute() else base / ruta
+        if archivo.exists():
+            f = lamina.shapes.add_picture(str(archivo), Mm(CUERPO_X), Mm(centro - ICONO / 2),
+                                          Mm(ICONO), Mm(ICONO))
+            f.name = "icono-" + archivo.stem
+        else:
+            print(f"  aviso: no encuentro el ícono {ruta}")
+        tb = caja(lamina, CUERPO_X + ICONO_TEXTO_X, centro - alto_t / 2 - 1,
+                  ICONO_TEXTO_W, alto_t + 2)
+        tb.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = tb.text_frame.paragraphs[0]
+        p.line_spacing = LS_CUERPO
+        sin_vineta(p)
+        escribir(p, texto, PT_CUERPO)
+        arriba += alto + ICONO_AIRE
+    return arriba + ICONO_ARRIBA
 
 
 def poner_parrafo(lamina, texto, y, ancho=None, pt=None):
@@ -990,7 +1124,9 @@ def poner_bloques(lamina, bloques, y, base, logos, ancho=None, plain=False):
         elif clase == "parrafo":
             y = poner_parrafo(lamina, datos, y, ancho)
         elif clase == "tabla":
-            y = poner_tabla(lamina, datos, y) + 1.5 * K
+            y = poner_tabla(lamina, datos, y, base) + 1.5 * K
+        elif clase == "filas_icono":
+            y = poner_filas_icono(lamina, datos, y, base)
         elif clase == "imagen":
             y = poner_imagen(lamina, datos, y, base) + 1.5 * K
         elif clase == "numerados":
@@ -1087,6 +1223,13 @@ def main():
     logos = base / "_extensions" / "irem" / "logos"
 
     meta, cuerpo = leer_meta(qmd.read_text())
+    # La viñeta verde del primer nivel: la trae la presentación resumen, y
+    # `vinetas: true` o `false` manda sobre el tipo. Es la misma regla que
+    # aplica `irem.lua` al PDF.
+    global VINETAS
+    VINETAS = meta.get("tipo") == "resumen"
+    if "vinetas" in meta:
+        VINETAS = meta["vinetas"].lower() in ("true", "sí", "si", "yes")
     prs = Presentation(str(plantilla))
     L = {l.name: l for l in prs.slide_layouts}
 

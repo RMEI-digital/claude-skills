@@ -13,6 +13,8 @@ contributes:
         - t
       include-in-header:
         - irem.tex
+      filters:
+        - irem.lua
       knitr:
         opts_chunk:
           dev: cairo_pdf

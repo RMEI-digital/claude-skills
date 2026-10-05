@@ -1,0 +1,50 @@
+---
+title: "Título de la presentación"
+subtitle: "REUNIÓN DE TRABAJO, OCTUBRE 2026"
+author: "País"
+date: today
+date-format: long
+lang: es
+format: irem-beamer
+tipo: resumen
+
+# Presentación resumen: entre 4 y 6 láminas que se entienden solas, sin notas
+# del presentador. Lleva la viñeta verde en el primer nivel por ser de este
+# tipo. Las fuentes no van en las láminas: van enlazadas en el documento de
+# contenido que se valida antes de armar esto.
+#
+# Los íconos y los logos se fabrican antes de compilar, desde esta carpeta:
+#   ./iconos.py tabler target users-group calendar-event
+#   ./iconos.py marca github postgresql
+# Los íconos son de Tabler Icons (MIT) y los logos de Simple Icons.
+---
+
+## Contexto
+
+```{=latex}
+\filaIcono{iconos/target.png}{La primera idea del contexto, en una frase}
+\filaIcono{iconos/users-group.png}{La segunda, que puede ocupar hasta dos renglones si hace falta}
+\filaIcono{iconos/calendar-event.png}{La tercera, la que lleva a la siguiente lámina}
+```
+
+## Qué se propone: componentes
+
+```{=latex}
+\begin{tablaIrem}{|m{32mm}|m{43mm}|m{45mm}|}
+\ch{Componente} & \ch{Hoy} & \ch{Después} \\ \hline
+\logoFila{iconos/logo-github.png}{Código} & Cómo está hoy, en una frase & Cómo queda, en una frase \\ \hline
+\logoFila{iconos/logo-postgresql.png}{Base de datos} & Cómo está hoy & Cómo queda \\ \hline
+\end{tablaIrem}
+```
+
+## Cómo lo hacemos
+
+- Un punto corto por renglón
+- Tres o cuatro como máximo
+- La oración completa no va: aquí no hay notas que la expliquen
+
+## Siguientes pasos
+
+1. Qué se decide, quién y para cuándo
+2. El segundo paso, en el orden en que se hace
+3. El tercero

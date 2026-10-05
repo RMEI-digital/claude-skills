@@ -187,7 +187,8 @@ institucional. Se escribe una sola vez y de ahí sale lo que haga falta, sin ree
 
 **Se lo pides así:** «Hazme una presentación de 20 minutos sobre los resultados, para el equipo
 de laboratorio», «necesito una propuesta de 30 minutos para el ministerio», «pásame también el
-PowerPoint, que la contraparte va a editarlo».
+PowerPoint, que la contraparte va a editarlo», «una presentación resumen de cinco láminas para
+la reunión de mañana», «corregí el PowerPoint a mano, pasa mis cambios».
 
 **Te va a preguntar** tres cosas: **audiencia** (y si es interna o va a un externo),
 **duración** y **qué salida** hace falta. Después propone el índice, una línea por lámina, y
@@ -197,7 +198,7 @@ cuesta un minuto y cambiar la presentación entera, una tarde.
 | Si pides | Recibes |
 |---|---|
 | Nada en particular | El PDF para proyectar y otro con las notas del presentador intercaladas |
-| «en PowerPoint», «el pptx» | Un `.pptx` editable, con las notas en el panel de notas |
+| «en PowerPoint», «el pptx» | Solo el `.pptx` editable, con las notas en el panel de notas |
 | «las dos» | Los tres archivos, desde la misma fuente |
 
 **PDF** cuando la presentación la das tú; **PowerPoint** en cuanto alguien más tenga que
@@ -206,9 +207,21 @@ sobre el mismo `.qmd`. Y dos cosas que conviene decirle, porque cambian el resul
 ministerio, un donante o un comité, usa la estructura fija de siete secciones; y si la charla
 lleva demostraciones en vivo, hacen falta la mitad de láminas.
 
+**Presentación resumen.** Si pides pocas láminas que se entiendan solas, para una reunión de
+trabajo o para mandarlas, arma una de entre cuatro y seis láminas sin notas del presentador:
+contexto con íconos, tablas con todos los bordes, puntos con viñeta verde y los siguientes
+pasos numerados. Antes te pasa un Word corto con lo que va en pantalla y sus fuentes, para
+validar el contenido rápido.
+
+**Si corriges el PowerPoint a mano**, tus cambios mandan: compara tu archivo con el que generó,
+te dice qué cambiaste y qué resaltaste en amarillo, pasa tus cambios a la fuente y recién ahí
+vuelve a generar. Tu archivo no lo toca.
+
 En la carpeta quedan los scripts para volver a compilar: `renderizar.sh` (los dos PDF),
-`renderizar-pptx.py` (el PowerPoint), `revisar.py` (revisa contenido y formato) y
-`pptx-a-pdf.sh` (convierte el PowerPoint para mirarlo lámina por lámina).
+`renderizar-pptx.py` (el PowerPoint), `revisar.py` (revisa contenido y formato),
+`pptx-a-pdf.sh` (convierte el PowerPoint para mirarlo lámina por lámina), `iconos.py` (los
+íconos y los logos, siempre con el mismo estilo) y `cambios-pptx.py` (qué se cambió a mano en
+un PowerPoint).
 
 ## Repositorios: `/irem-repo`
 

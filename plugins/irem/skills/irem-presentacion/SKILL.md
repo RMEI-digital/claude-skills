@@ -1,6 +1,6 @@
 ---
 name: irem-presentacion
-description: Genera presentaciones con el formato institucional Mesoamérica Malaria (IREM) / BID, en PDF o en PowerPoint editable, desde una sola fuente en Quarto. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck", "unas láminas", "un PowerPoint" o "un pptx" para el equipo, para una reunión, para el BID o para un donante; cuando pida el archivo editable para que lo modifique una contraparte; también cuando pida una propuesta para un ministerio, un comité o una contraparte de gobierno, o convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
+description: Genera presentaciones con el formato institucional Mesoamérica Malaria (IREM) / BID, en PDF o en PowerPoint editable, desde una sola fuente en Quarto. Úsala cuando alguien pida "una presentación", "unas diapositivas", "un deck", "unas láminas", "un PowerPoint" o "un pptx" para el equipo, para una reunión, para el BID o para un donante; cuando pida "una presentación resumen" o "pocas láminas" para una reunión de trabajo; cuando pida el archivo editable para que lo modifique una contraparte; cuando traiga un PowerPoint que generó esta skill y que alguien editó a mano; también cuando pida una propuesta para un ministerio, un comité o una contraparte de gobierno, o convertir un informe, unas notas o un documento en presentación. No la uses para documentos que no sean presentaciones.
 ---
 
 # Presentaciones institucionales IREM / BID
@@ -39,6 +39,12 @@ El `.qmd` es el mismo para las dos. Lo que cambia es con qué se compila:
 editar las láminas, un ministerio que pide el archivo, quien va a exponer desde su
 propia máquina, o una reunión donde se va a mover el orden en vivo.
 
+**Si piden un PowerPoint, el entregable es el `.pptx` y nada más.** No se compila el
+PDF, y si el camino del PDF falla, no se arregla: se genera con `renderizar-pptx.py`,
+se revisa con `revisar.py` y `pptx-a-pdf.sh`, y se miran los PNG de `.revision-pptx/`.
+El `.qmd` sigue siendo la fuente; lo que se deja de lado es la otra salida. Ya pasó:
+el trabajo se fue en arreglar un PDF que nadie había pedido.
+
 Si no está claro, haz las dos: es el mismo `.qmd` y son dos comandos. Lo que **no**
 se hace es escribir dos versiones del contenido.
 
@@ -56,6 +62,18 @@ Si el usuario no las dio, pregúntalas en un solo mensaje:
 
 Y una tercera, que no es de contenido pero cambia lo que entregas: **si hace falta el
 PowerPoint editable o basta el PDF.** Ver «Dos salidas, una sola fuente» arriba.
+
+Con eso queda claro de cuál de los tres tipos es, y cada uno tiene su estructura:
+
+| Tipo | Cuándo | Estructura |
+|---|---|---|
+| **Charla** (por omisión) | La expone alguien, con guion | La que pida el argumento; presupuesto abajo |
+| **Propuesta a un externo** | Pide una decisión a un ministerio, donante o comité | Las siete secciones fijas, más abajo |
+| **Resumen** | Pocas láminas que se entienden solas, para una reunión de trabajo o para mandar | La de cinco láminas, más abajo, con `tipo: resumen` |
+
+Si piden «una presentación resumen», «pocas láminas», «algo corto para la reunión» o
+«como la que hicimos para…» señalando una de este tipo, es un resumen: la duración no
+manda, manda que sean entre cuatro y seis láminas.
 
 Si el usuario trae material de origen (informe, notas, datos), léelo antes de
 proponer estructura. No resumas el documento lámina por lámina: eso produce
@@ -242,6 +260,48 @@ Esto sale de revisar propuestas reales del equipo. Todos son de contenido, no de
   40. La sección «lo que vemos» es la que más se desborda: cada actor trae cinco hallazgos y
   se vuelcan todos. Van los dos que cambian la decisión; el resto, a las notas.
 
+### Si la presentación es un resumen
+
+Es la de pocas láminas que se entienden solas: para una reunión de trabajo, para que la
+jefatura la lleve a una reunión o para mandarla por correo. Nadie la va a narrar con un
+guion, así que **no lleva notas del presentador** y lo que importa tiene que estar en
+pantalla. Salió de dos presentaciones reales del equipo, y la segunda se pidió
+literalmente «de forma similar» a la primera.
+
+Se marca en el encabezado con `tipo: resumen`, y eso cambia tres cosas:
+
+- **Las listas llevan la viñeta verde** en el primer nivel, en el PDF y en el PowerPoint.
+- **`revisar.py` no pide notas** ni busca la espina de la propuesta, y el tope sube a 60
+  palabras por lámina: lo que en una charla va al guion, aquí va en pantalla.
+- **El verificador espera entre cuatro y seis láminas** de contenido.
+
+#### Primero el contenido, después las láminas
+
+Antes del `.qmd` se escribe un **documento de contenido corto**: por cada lámina, el
+título y lo que va en pantalla, y al pie de cada una las fuentes enlazadas. Son unas dos
+páginas, no siete, y sin guion. Se entrega en Word con la skill `irem-word-formato` y
+se valida rápido; recién con el visto bueno se arma la presentación. Así las vueltas se
+hacen sobre un texto de dos páginas y no sobre láminas.
+
+#### La estructura
+
+Las dos presentaciones que dieron origen al tipo tienen esta forma, y es la que se
+propone salvo que el contenido pida otra:
+
+| Lámina | Título | Qué lleva |
+|---|---|---|
+| 1 | Contexto | Tres `\filaIcono`: por qué estamos aquí, una frase por fila |
+| 2 a 3 | Lo que se compara o se transfiere, calificado con dos puntos | Una tabla con todos los bordes; con `\logoFila` si las filas son herramientas |
+| 4 | Cómo, u opciones | Hasta cuatro puntos con viñeta, o una tabla corta y dos o tres puntos |
+| 5 | Ruta crítica o Siguientes pasos | Lista numerada: las fases o los pasos en el orden en que se hacen |
+
+La plantilla está en `plantilla/resumen.qmd`, con esta misma forma.
+
+Dos cosas que se pidieron corregir en esas presentaciones y que ya van así de entrada:
+**las cabeceras de tabla en tipo oración** («Qué hicieron», no «QUÉ HICIERON») y **las
+fuentes fuera de la lámina**, en el documento de contenido. Una lámina con tabla y
+puntos debajo queda justa de espacio: si la lista pasa de tres puntos, son dos láminas.
+
 ### 3. Monta el proyecto
 
 Claude Code te informa el directorio base de esta skill al invocarla («Base
@@ -255,9 +315,13 @@ mkdir -p <carpeta>
 cp -R "$BASE/plantilla/_extensions" <carpeta>/
 cp "$BASE/plantilla/plantilla-irem.pptx" <carpeta>/
 cp "$BASE/plantilla/renderizar.sh" "$BASE/plantilla/renderizar-pptx.py" \
-   "$BASE/plantilla/pptx-a-pdf.sh" "$BASE/plantilla/revisar.py" <carpeta>/
+   "$BASE/plantilla/pptx-a-pdf.sh" "$BASE/plantilla/revisar.py" \
+   "$BASE/plantilla/iconos.py" "$BASE/plantilla/cambios-pptx.py" <carpeta>/
 chmod +x <carpeta>/*.sh <carpeta>/*.py
 ```
+
+Si es un resumen, arranca de la plantilla del tipo:
+`cp "$BASE/plantilla/resumen.qmd" <carpeta>/<archivo>.qmd`.
 
 Se copia todo aunque solo vayas a hacer una de las dos salidas: son unos cientos de
 kilobytes y así la otra está a un comando de distancia si la piden después.
@@ -294,6 +358,16 @@ Los cuatro campos caen en sitios distintos de la portada, y no son los de siempr
 El `subtitle` **no es un subtítulo**: es la volanta. Si le pones una frase
 explicativa larga, se encoge para caber en la barra y queda ilegible. Va corto y en
 mayúsculas.
+
+Dos campos más, que no se ven en la portada pero cambian el resto:
+
+| Campo | Qué hace |
+|---|---|
+| `tipo: resumen` | Presentación resumen: viñeta verde, sin notas, entre cuatro y seis láminas. Ver «Si la presentación es un resumen» |
+| `vinetas: true` | Enciende la viñeta verde en cualquier otro tipo; `vinetas: false` la apaga en un resumen |
+
+Los lee el generador de PowerPoint y, para el PDF, el filtro `irem.lua` de la
+extensión, así que las dos salidas deciden igual.
 
 **No escribas la fecha a mano.** Quarto intenta parsear el campo `date` y una fecha
 en español como `"20 de agosto de 2026"` produce un literal `Invalid Date` impreso
@@ -361,8 +435,9 @@ verificador, que revisa lo mecánico:
 
 Comprueba tres cosas y las reporta por separado. El **contenido**, sobre el `.qmd`
 (palabras por lámina, viñetas, títulos repetidos, marcadores `[...]` sin resolver,
-cobertura de notas y, si es una propuesta a un externo, que estén las siete secciones
-y en orden). El **formato**, sobre los PNG del PDF (que nada invada la banda de los
+cobertura de notas, cabeceras de tabla en mayúsculas, fuentes puestas en la lámina y,
+si es una propuesta a un externo, que estén las siete secciones y en orden; en un
+resumen no pide notas ni espina). El **formato**, sobre los PNG del PDF (que nada invada la banda de los
 logotipos ni se salga por los lados, que la portada sangre, y que el PDF tenga tantas
 láminas como describe el `.qmd`). Y **PowerPoint**, sobre el `.pptx` si existe: que
 ninguna forma se salga del área útil, que el texto quepa en su caja y que ningún
@@ -486,6 +561,12 @@ anidar un frame dentro de otro rompe la compilación con `! Extra }, or forgotte
 \endgroup`, y el PDF sale truncado, con menos láminas de las que escribiste y sin
 mensaje evidente de qué pasó.
 
+**Tampoco definas comandos dentro de una lámina.** Un `\newcommand` en el bloque
+`{=latex}` de una lámina hace lo mismo: en una presentación real, el PDF salió con una
+lámina de cinco. Si de verdad hace falta un comando propio, va en el encabezado con
+`include-in-header`; pero antes mira la tabla de abajo, porque lo más probable es que
+ya exista.
+
 | Comando | Para qué sirve |
 |---|---|
 | `\numerado{01}{texto}` | Fila numerada: cifra verde y caja verde. Va dentro de `numerados` |
@@ -495,7 +576,9 @@ mensaje evidente de qué pasó.
 | `\cifra{41\%}{qué significa}` | Un dato que debe golpear |
 | `\pregunta{...}` | Momento participativo, con etiqueta visible para la audiencia |
 | `\concepto{término}{frase}` | Caja de concepto, para láminas de vocabulario |
-| `\notaPie{...}` | Nota en gris pequeño al pie de la lámina: denominadores, salvedades |
+| `\filaIcono{png}{texto}` | Ícono en círculo verde con una frase al lado; la lámina de contexto del resumen |
+| `\logoFila{png}{texto}` | Logo de una herramienta a la izquierda del texto de una celda de tabla |
+| `\notaPie{...}` | Nota en gris pequeño al pie de la lámina: denominadores, salvedades. Las fuentes no van aquí |
 | `\laminaGracias` | Cierre. Acepta otro texto: `\laminaGracias[Preguntas]` |
 | `\logosPie` | Añade los dos logotipos a una lámina `.plain` |
 | `\cintilla{comite}` o `\cintilla{socios}` | Cintilla de logos, solo para público externo |
@@ -508,7 +591,9 @@ LaTeX. `\laminaGracias` ya trae su propia banda de logotipos.
 PowerPoint los lee del mismo bloque `{=latex}` y los dibuja con formas nativas: la
 caja verde de un numeral es una autoforma, la tabla es una tabla de PowerPoint y el
 recuadro de realce es un rectángulo redondeado. Quien reciba el archivo puede
-editarlos.
+editarlos. No hace falta ningún script de ajuste después de generar: si alguna vez te
+ves escribiendo uno para retocar el `.pptx`, lo que falta es un comando en el formato,
+y va en `irem.tex` y en `renderizar-pptx.py`.
 
 Lo único que el `.pptx` no puede hacer es **ejecutar código**: un bloque
 ` ```{r} ` o ` ```{python} ` que calcule una figura solo corre en el camino del PDF.
@@ -573,7 +658,7 @@ contenido de la lámina, que en este formato es casi siempre.
 ```{=latex}
 \begin{center}
 \begin{tablaIrem}{m{58mm}rr}
-\ch{COMPONENTE} & \ch{LÍNEA BASE (2019)} & \ch{PRIMERA FASE (2024)} \\
+\ch{Componente} & \ch{Línea base (2019)} & \ch{Primera fase (2024)} \\
 Evaluación periódica  & 75,0\% & \celdaCalor{medio}{62,5\%} \\
 Retroalimentación     & 37,5\% & \celdaCalor{alto}{50,0\%} \\
 \end{tablaIrem}
@@ -582,6 +667,12 @@ Retroalimentación     & 37,5\% & \celdaCalor{alto}{50,0\%} \\
 \notaPie{N: establecimientos en la muestra.}
 ```
 ````
+
+**La cabecera va en tipo oración**, «Línea base», no «LÍNEA BASE». La banda azul y la
+negrita ya la separan del cuerpo; en mayúsculas se lee a gritos y se pidió corregir.
+`revisar.py` lo marca.
+
+Sin `\begin{center}`, la tabla queda al ras del margen izquierdo, en las dos salidas.
 
 Tres detalles que ahorran una recompilación:
 
@@ -592,6 +683,75 @@ Tres detalles que ahorran una recompilación:
 - `\celdaCalor{bajo|medio|alto}{...}` pinta la celda con la escala de tres colores
   que el master declara en su lámina 16. Úsala solo donde haya una meta contra la
   cual comparar.
+
+#### Tabla con todos los bordes
+
+Cuando la tabla compara cosas fila por fila (países, componentes, opciones), los bordes
+ayudan a seguir cada fila. Se piden con barras en la especificación y un `\hline` al
+final de cada fila; el gris de los filetes ya viene puesto:
+
+````markdown
+```{=latex}
+\begin{tablaIrem}{|m{32mm}|m{43mm}|m{45mm}|}
+\ch{Componente} & \ch{Hoy} & \ch{Al transferir} \\ \hline
+\logoFila{iconos/logo-github.png}{Código (GitHub)} & Repositorio privado & Completo \\ \hline
+\logoFila{iconos/logo-powerbi.png,iconos/logo-tableau.png}{Tablero} & Cuentas de la IREM & A definir \\ \hline
+\end{tablaIrem}
+```
+````
+
+El generador de PowerPoint mira esas mismas barras para dibujar los bordes, así que no
+hay nada más que hacer. Sin barras, la tabla sale como siempre, sin filetes.
+
+`\logoFila` pone el logo de la herramienta a la izquierda del texto de la celda, y si
+lleva varios separados por coma los apila. El texto va en su propia caja al lado del
+logo: puesto en línea, un texto de dos renglones se metía por debajo del logo y partía
+palabras («Hero-ku»).
+
+### Filas con ícono
+
+Para tres ideas paralelas que abren una presentación, en vez de tres viñetas, tres
+filas con un ícono cada una. Es la lámina de contexto del resumen:
+
+````markdown
+## Contexto
+
+```{=latex}
+\filaIcono{iconos/vigilancia.png}{Reforzar la vigilancia para evitar el restablecimiento de la malaria}
+\filaIcono{iconos/mapa.png}{Saber qué vectores hay y dónde, para actuar rápido ante un caso importado}
+\filaIcono{iconos/camara.png}{Identificar especies de vectores con IA a partir de fotos}
+```
+````
+
+Tres por lámina, una frase cada una y dos renglones como máximo. El ícono acompaña a la
+frase, no la reemplaza: si sin el ícono no se entiende, la frase está mal.
+
+### Íconos y logos: `iconos.py`
+
+Los íconos de las filas y los logos de las tablas no se buscan a mano en internet: los
+fabrica `iconos.py`, siempre con el mismo estilo, y los deja en `iconos/`:
+
+```bash
+./iconos.py tabler shield-check map-pin camera     # iconos/shield-check.png ...
+./iconos.py tabler shield-check:vigilancia          # con otro nombre: iconos/vigilancia.png
+./iconos.py marca github postgresql powerbi         # iconos/logo-github.png ...
+```
+
+| Clase | De dónde | Cómo sale | Para |
+|---|---|---|---|
+| `tabler` | [Tabler Icons](https://tabler.io/icons), licencia MIT | Pictograma blanco en un círculo del verde institucional | `\filaIcono` |
+| `marca` | [Simple Icons](https://simpleicons.org) | Logo en el color de la marca, fondo transparente | `\logoFila` |
+
+Los nombres son los de esas dos páginas: en Tabler, el de la versión «outline»; en
+Simple Icons, el que aparece en la dirección del logo. Simple Icons retira logos de una
+versión a otra cuando la marca lo pide (Heroku y Twilio ya no están en la última), así
+que el script busca de la versión más nueva a la más vieja y usa la primera que lo
+tenga.
+
+**Los logos son marcas de sus dueños.** Simple Icons los publica en CC0, pero algunos,
+como los de Microsoft, traen condiciones propias; el script las imprime cuando las hay.
+Úsalos para nombrar la herramienta, no como decoración. Anota de dónde salieron en el
+encabezado del `.qmd`, que es donde lo va a buscar quien edite después.
 
 ### Láminas de vocabulario
 
@@ -783,6 +943,12 @@ segundo nivel, y en gris oscuro, no en verde.
 Las listas numeradas sí llevan 5 mm, porque el número necesita dónde ponerse. Con el
 margen en cero se salía de la lámina por la izquierda.
 
+**La viñeta verde es la excepción, y es opcional.** La presentación resumen la lleva
+(`tipo: resumen`), y cualquier otra la enciende con `vinetas: true`. Con viñeta, el
+texto entra los mismos 5 mm que una lista numerada y el punto verde queda en medio, en
+el PDF y en el PowerPoint. No se cuelga el punto en el margen: así lo hacía una
+presentación que la agregó a mano, y el PDF y el PowerPoint quedaban distintos.
+
 Lo que separa un punto del siguiente es el aire, no el glifo. Si escribes puntos
 largos que se envuelven a dos y tres renglones, la lámina se lee como un párrafo
 partido en trozos y la decisión de no usar viñeta se convierte en un error de
@@ -851,14 +1017,47 @@ Diferencias que quedan, medidas y aceptadas: la tabla arranca unos 4 mm más aba
 rejilla de conceptos queda 2 mm más apretada y el título cae 0,6 mm más abajo. Nada de
 eso se ve salvo poniendo las dos láminas una encima de la otra.
 
+## Cuando el PowerPoint se edita a mano
+
+Pasa, y está bien: quien recibe el `.pptx` lo corrige en PowerPoint, y a veces deja
+comentarios **resaltados en amarillo** para conversarlos. La regla es una: **lo que
+editó a mano manda**. Se puede seguir regenerando desde el `.qmd`, que es más limpio que
+parchar el `.pptx`, pero solo después de llevar sus cambios al `.qmd`. Regenerar sin
+recogerlos los pisa, y no hay forma de recuperarlos.
+
+El flujo:
+
+1. **No toques su archivo.** El editado se lee, no se escribe: ni se regenera encima ni
+   se guarda sobre él, y menos si está en una carpeta compartida. Trabaja en la carpeta
+   del `.qmd`.
+2. **Compara** el que generaste con el que editó:
+
+   ```bash
+   ./cambios-pptx.py <archivo>.pptx "<ruta al editado>.pptx"
+   ```
+
+   Dice, lámina por lámina, el **texto** quitado y agregado, lo **resaltado**, las
+   **formas** que se movieron o cambiaron de tamaño, y los renglones que quedaron
+   **fuera de Montserrat** al escribirlos a mano.
+3. **Conversa lo resaltado antes de tocar nada**, uno por uno o por sección. Son
+   preguntas, no instrucciones.
+4. **Lleva el texto al `.qmd`.** Las posiciones y los tamaños el `.qmd` no los guarda:
+   si alguien subió una tabla para que le cupiera una lista debajo, la solución en el
+   `.qmd` es partir la lámina o acortar la lista. Lo que no se pueda expresar, dilo,
+   porque se va a perder al regenerar.
+5. **Regenera y vuelve a comparar** contra el editado. El texto tiene que quedar
+   idéntico; lo único que puede quedar son las formas que decidiste no replicar.
+
 ## Criterios de calidad
 
 Antes de entregar, revisa que se cumpla todo esto:
 
-- Ninguna lámina pasa de 40 palabras, salvo que sea una tabla.
+- Ninguna lámina pasa de 40 palabras, salvo que sea una tabla. En un resumen, 60.
 - Ninguna lista pasa de cuatro puntos, ni ningún punto de dos renglones.
 - Ningún título de lámina ocupa más de dos líneas.
-- Toda lámina no obvia tiene nota del presentador.
+- Toda lámina no obvia tiene nota del presentador, salvo en un resumen, que no lleva.
+- Las cabeceras de tabla van en tipo oración, no en mayúsculas.
+- Ninguna fuente en la lámina: van enlazadas en el documento de contenido o en las notas.
 - En una charla interna, hay al menos un momento participativo cada diez minutos. En una
   propuesta a un externo, no: un comité no levanta la mano.
 - Nada invade la banda del pie: el área útil termina en 77 mm.
@@ -904,3 +1103,11 @@ Si entregas el `.pptx`, además:
   dos presentaciones distintas y nadie sabe cuál es la buena.
 - **Trabajar en `/tmp` cuando hace falta el `.pptx`.** El sandbox de PowerPoint no
   exporta desde ahí y lo hace en silencio: dice que guardó y no hay archivo.
+- **Definir un `\newcommand` dentro de una lámina.** Beamer no compila y el PDF sale
+  con menos láminas, sin error a la vista. Los comandos van en el formato.
+- **Escribir un script que retoque el `.pptx` después de generarlo.** Se hizo para
+  poner íconos y bordes, y empujaba el contenido hacia la banda de los logotipos sin
+  que el verificador lo viera, porque corría antes. Si falta algo, va en el formato.
+- **Regenerar encima de un `.pptx` editado a mano.** Sus cambios se pierden. Primero
+  `cambios-pptx.py`, después el `.qmd`, y recién ahí se regenera.
+- **Arreglar el PDF cuando pidieron PowerPoint.** El entregable es el `.pptx`.

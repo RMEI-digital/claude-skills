@@ -143,6 +143,8 @@ Presentaciones con la identidad visual oficial: portada con fotografía a sangre
 - «Hazme una presentación de 20 minutos sobre los resultados, para el equipo de laboratorio.»
 - «Necesito una propuesta de 30 minutos para el ministerio de salud.»
 - «Pásame también el PowerPoint, que la contraparte va a editarlo.»
+- «Una presentación resumen de cinco láminas para la reunión de mañana.»
+- «Corregí el PowerPoint a mano, pasa mis cambios.»
 
 ### Te va a preguntar
 
@@ -155,10 +157,14 @@ Tres cosas: **audiencia** (y si es interna o va a un externo), **duración** y *
 | Si pides | Recibes |
 |---|---|
 | Nada en particular | El PDF para proyectar y otro con las notas del presentador intercaladas |
-| «en PowerPoint», «el pptx» | Un archivo editable, con las notas en el panel de notas |
+| «en PowerPoint», «el pptx» | Solo el archivo editable, con las notas en el panel de notas |
 | «las dos» | Los tres archivos, desde la misma fuente |
 
 **PDF** cuando la presentación la das tú; **PowerPoint** en cuanto alguien más tenga que editarla. La decisión no cierra ninguna puerta: si después piden el editable, es un comando más sobre el mismo archivo. Y dos cosas que conviene decirle, porque cambian el resultado: si va a un ministerio, un donante o un comité, usa la estructura fija de siete secciones; y si la charla lleva demostraciones en vivo, hacen falta la mitad de láminas.
+
+**Presentación resumen.** Si pides pocas láminas que se entiendan solas, para una reunión de trabajo o para mandarlas, arma una de entre cuatro y seis láminas sin notas del presentador: contexto con íconos, tablas con todos los bordes, puntos con viñeta verde y los siguientes pasos numerados. Antes te pasa un Word corto con lo que va en pantalla y sus fuentes, para validar el contenido rápido.
+
+**Si corriges el PowerPoint a mano**, tus cambios mandan: compara tu archivo con el que generó, te dice qué cambiaste y qué resaltaste en amarillo, pasa tus cambios a la fuente y recién ahí vuelve a generar. Tu archivo no lo toca.
 
 ## Repositorios: /irem-repo
 

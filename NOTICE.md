@@ -48,6 +48,17 @@ misma imagen dentro de `plantilla-irem.pptx`) es material de comunicación insti
 IREM, con personas identificables. No se licencia bajo CC BY 4.0 y no debe reutilizarse fuera de
 documentos institucionales de la IREM.
 
+### 3. Íconos y logos que bajan los scripts
+
+`plugins/irem/skills/irem-presentacion/plantilla/iconos.py` no trae íconos: los baja al
+momento de usarlo y los deja en la carpeta de cada presentación. No forman parte de este
+repositorio.
+
+- Los pictogramas salen de [Tabler Icons](https://tabler.io/icons), bajo licencia MIT.
+- Los logos de herramientas y empresas salen de [Simple Icons](https://simpleicons.org), que
+  los publica en CC0 salvo excepciones con condiciones propias (el script las avisa). Son
+  marcas de sus dueños, y la CC0 de los archivos no concede derechos sobre la marca.
+
 ## Si adaptas esto para otra organización
 
 Sustituye los logotipos y la fotografía por los tuyos. El resto del repositorio, que es donde

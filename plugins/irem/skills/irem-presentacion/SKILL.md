@@ -600,6 +600,24 @@ Lo único que el `.pptx` no puede hacer es **ejecutar código**: un bloque
 Si la lámina lleva una figura calculada y hace falta el PowerPoint, guarda la figura
 como `.png` y ponla con `![](figura.png)`, que sí funciona en las dos.
 
+Una imagen también puede ir en una columna, al lado de texto o de una lista. Se escribe
+como en cualquier Quarto y sale igual en las dos salidas: la imagen se centra en el
+ancho de su columna y se achica si no cabe hasta el pie.
+
+```markdown
+:::: {.columns}
+::: {.column width="38%"}
+Un recorrido corto:
+
+1. Abrir la jornada
+2. Registrar una prueba
+:::
+::: {.column width="62%"}
+![](img/tablet.png)
+:::
+::::
+```
+
 Si decides usar una portadilla, es automática: cada `#` genera una lámina blanca con el
 título centrado en azul, y nunca se escribe a mano. Recuerda que cada una es una lámina
 con una sola frase, así que tiene que ganarse el lugar.
@@ -613,6 +631,11 @@ Lo que yo digo, no lo que se proyecta.
 ```
 
 Escribe notas en **toda** lámina que no sea obvia: son el guion de quien presenta.
+
+Escríbelas como Markdown, partidas en renglones si quieres: en el panel de PowerPoint
+cada párrafo sale de corrido, y solo la línea en blanco o un punto de lista (`1.`, `-`)
+abren renglón. Todo el texto, láminas y notas, va marcado en el idioma de `lang`; sin
+eso, un PowerPoint en inglés subraya cada palabra en español.
 
 ### Numerales 01 / 02 / 03
 

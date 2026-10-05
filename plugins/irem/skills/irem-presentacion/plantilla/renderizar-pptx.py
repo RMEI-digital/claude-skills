@@ -142,6 +142,10 @@ AIRE_CELDA = 0.8
 #  Viñeta verde en el primer nivel. Apagada como en el master; la enciende
 #  `tipo: resumen` o `vinetas: true` en el encabezado (ver main).
 VINETAS = False
+#  Idioma de todo el texto, láminas y notas. Sale de `lang` en el .qmd. Sin
+#  marcarlo, cada PowerPoint usa el suyo y, si es inglés, el corrector subraya
+#  cada palabra en español.
+IDIOMA = "es-ES"
 SANGRIA_LISTA = 5.0 * K
 
 # --- Escala tipográfica -----------------------------------------------------
@@ -695,6 +699,7 @@ def escribir(p, contenido, pt, color=GRIS_OSCURO, negrita=False, cursiva=False,
         r.font.italic = cursiva or f.get("cursiva", False)
         r.font.name = FUENTE_MONO if f.get("mono") else fuente
         r.font.color.rgb = color
+        r._r.get_or_add_rPr().set("lang", IDIOMA)
 
 
 def texto_simple(lamina, x, y, w, h, contenido, pt, **kw):
@@ -1096,21 +1101,25 @@ def poner_parrafo(lamina, texto, y, ancho=None, pt=None):
     return y + alto
 
 
-def poner_imagen(lamina, ruta, y, base):
+def poner_imagen(lamina, ruta, y, base, x=None, ancho=None):
+    """La imagen centrada en su ancho, que es el del cuerpo o el de su columna,
+    y achicada si no cabe hasta el final del área útil."""
     from PIL import Image
     archivo = (base / ruta) if not Path(ruta).is_absolute() else Path(ruta)
     if not archivo.exists():
         print(f"  aviso: no encuentro la imagen {ruta}")
         return y
+    x = CUERPO_X if x is None else x
+    ancho = CUERPO_W if ancho is None else ancho
     with Image.open(archivo) as im:
         prop = im.size[1] / im.size[0]
-    w = CUERPO_W
+    w = ancho
     h = w * prop
     disponible = AREA_FIN - y - 2
     if h > disponible:
         h = disponible
         w = h / prop
-    lamina.shapes.add_picture(str(archivo), Mm(CUERPO_X + (CUERPO_W - w) / 2),
+    lamina.shapes.add_picture(str(archivo), Mm(x + (ancho - w) / 2),
                               Mm(y), Mm(w), Mm(h))
     return y + h
 
@@ -1199,13 +1208,46 @@ def poner_bloques(lamina, bloques, y, base, logos, ancho=None, plain=False):
                         cy += alto + 2
                     elif c_clase == "punteos":
                         cy = poner_punteos(lamina, c_datos, cy, ancho_col) + 2
+                    elif c_clase == "imagen":
+                        cy = poner_imagen(lamina, c_datos, cy, base, x_col,
+                                          ancho_col) + 1.5 * K
     return y
 
 
 def notas(lamina, texto):
+    """Las notas, en el panel de notas de PowerPoint.
+
+    En el .qmd vienen partidas en renglones, como todo Markdown, donde un salto
+    simple es un espacio y solo la línea en blanco abre párrafo. Pasarlas tal
+    cual las dejaba cortadas a media frase en el panel. Los puntos de una lista
+    (`1.`, `-`) sí van cada uno en su renglón.
+    """
     if not texto:
         return
-    lamina.notes_slide.notes_text_frame.text = texto
+    bloques = []
+    for bloque in re.split(r"\n\s*\n", texto.strip()):
+        parrafos = []
+        for linea in (l.strip() for l in bloque.split("\n")):
+            if not linea:
+                continue
+            if not parrafos or re.match(r"^(\d+[.)]|[-*])\s", linea):
+                parrafos.append(linea)
+            else:
+                parrafos[-1] += " " + linea
+        if parrafos:
+            bloques.append(parrafos)
+    tf = lamina.notes_slide.notes_text_frame
+    tf.text = ""
+    primero = True
+    for i, parrafos in enumerate(bloques):
+        for t in ([""] if i else []) + parrafos:
+            p = tf.paragraphs[0] if primero else tf.add_paragraph()
+            primero = False
+            if t:
+                r = p.add_run()
+                r.text = t
+                r._r.get_or_add_rPr().set("lang", IDIOMA)
+            p._p.get_or_add_endParaRPr().set("lang", IDIOMA)
 
 
 # ==========================================================================
@@ -1226,7 +1268,10 @@ def main():
     # La viñeta verde del primer nivel: la trae la presentación resumen, y
     # `vinetas: true` o `false` manda sobre el tipo. Es la misma regla que
     # aplica `irem.lua` al PDF.
-    global VINETAS
+    global VINETAS, IDIOMA
+    idioma = meta.get("lang", "es")
+    IDIOMA = idioma if "-" in idioma else {"es": "es-ES", "en": "en-US",
+                                            "pt": "pt-BR"}.get(idioma, idioma)
     VINETAS = meta.get("tipo") == "resumen"
     if "vinetas" in meta:
         VINETAS = meta["vinetas"].lower() in ("true", "sí", "si", "yes")
